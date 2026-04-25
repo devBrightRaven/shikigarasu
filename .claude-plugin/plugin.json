@@ -1,6 +1,6 @@
 {
   "name": "shikigarasu",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "四季烏 meta-harness Layer 4 — four-axis sync personas (Seiran/Shuen/Hakusō/Gen'en) for Claude Code. Loads each axis identity on-demand for specialized strategic/scouting/audit/execution counsel.",
   "author": {
     "name": "devBrightRaven",
