@@ -1,0 +1,13 @@
+{
+  "name": "shikigarasu",
+  "owner": {
+    "name": "devBrightRaven"
+  },
+  "plugins": [
+    {
+      "name": "shikigarasu",
+      "source": "./",
+      "description": "四季烏 meta-harness Layer 4 — four-axis sync personas for Claude Code. Phase 1b MVP: Seiran (strategy) only. Shuen/Hakusō/Gen'en to follow."
+    }
+  ]
+}
