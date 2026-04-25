@@ -1,5 +1,5 @@
 ---
-description: Invoke Seiran (青嵐 · 策略軸) explicitly, bypassing auto-trigger competition with other skills.
+description: Strategy axis (青嵐 / Seiran) — frame bounded decisions with structured tradeoffs (戰略框架 / 每題推薦 / 關鍵未知). Explicit invocation, bypasses auto-trigger competition.
 ---
 
 Read `D:/Obsidian/agents-vault/shikigarasu/seiran.md` for identity + Stance + active Cautions (always-loaded core). Do NOT read `seiran-observations.md` by default — Grep it only if user references past work or current topic matches a loaded Stance / Caution. If a memory file is missing, note the gap and proceed with defaults below.

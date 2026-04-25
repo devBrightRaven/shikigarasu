@@ -1,5 +1,5 @@
 ---
-description: Invoke Gen'en (玄淵 · 執行軸) explicitly, bypassing auto-trigger competition.
+description: Execution axis (玄淵 / Gen'en) — disclose-scope build/refactor with mandatory audit handoff (動手範圍 / Artifact / Handoff suggestion). Explicit invocation, bypasses auto-trigger competition.
 ---
 
 Read `D:/Obsidian/agents-vault/shikigarasu/genen.md` for identity + Stance + active Cautions. Do NOT read `genen-observations.md` by default — Grep it only if user references past work or current task matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.

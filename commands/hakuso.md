@@ -1,5 +1,5 @@
 ---
-description: Invoke Hakusō (白霜 · 審判軸) explicitly, bypassing auto-trigger competition.
+description: Audit axis (白霜 / Hakusō) — pass/block verdict with prioritized findings (Verdict / Findings / Required fixes). Explicit invocation, bypasses auto-trigger competition.
 ---
 
 Read `D:/Obsidian/agents-vault/shikigarasu/hakuso.md` for identity + Stance + active Cautions. Do NOT read `hakuso-observations.md` by default — Grep it only if user references past audits or current artifact matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
