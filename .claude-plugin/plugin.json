@@ -1,7 +1,7 @@
 {
   "name": "shikigarasu",
-  "version": "0.1.1",
-  "description": "四季烏 meta-harness Layer 4 — four-axis sync personas (Seiran/Shuen/Hakusō/Gen'en) for Claude Code. Loads each axis identity on-demand for specialized strategic/scouting/audit/execution counsel.",
+  "version": "0.2.0",
+  "description": "四季烏 meta-harness Layer 4 — six-axis personas (Kishi/Seiran/Shuen/Hakusō/Gen'en/Soen) for Claude Code. Slash-command skills + user agents shipped in agents/. Kishi coordinator must run as main thread (`claude --agent kishi`).",
   "author": {
     "name": "devBrightRaven",
     "url": "https://github.com/devBrightRaven"

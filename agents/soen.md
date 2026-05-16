@@ -64,7 +64,7 @@ Write results when:
 - Research loop completes a cycle
 - User requests it
 
-Default path: Read `~/.claude/vault-local.md` — if `research:` key exists, write to `{vault}/{research}/<topic>/<YYYY-MM-DD>-<topic>.md`; otherwise fall back to `~/.claude/sessions/research-<topic>-<YYYY-MM-DD>.md`.
+Default path: Read `~/.claude/vault-local.md` — if `research:` key exists, write to `{vault}/{research}/<topic>/<YYYY-MM-DD>-<topic>.md`; otherwise fall back to OS temp (`$TEMP/soen-<topic>-<YYYY-MM-DD>.md` on Windows or `/tmp/soen-<topic>-<YYYY-MM-DD>.md` on Unix). **NEVER write under `~/.claude/`** — that path is in the sensitive-files deny-list and will be blocked.
 Always show the target path before writing. Write on user confirmation unless Kishi specified a path.
 
 ## Tool discipline
