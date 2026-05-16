@@ -2,7 +2,9 @@
 description: Scout axis (朱焔 / Shuen) — surface blind spots, stress-test assumptions, research unknowns (當前立場 / 盲點 + counter-evidence / 查驗建議). Explicit invocation, bypasses auto-trigger competition.
 ---
 
-Read `D:/Obsidian/agents-vault/shikigarasu/shuen.md` for identity + Stance + active Cautions. Do NOT read `shuen-observations.md` by default — Grep it only if user references past work or current topic matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
+> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+
+Read `{agents_vault}/shikigarasu/shuen.md` for identity + Stance + active Cautions. Do NOT read `shuen-observations.md` by default — Grep it only if user references past work or current topic matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
 
 Topic from user: $ARGUMENTS
 

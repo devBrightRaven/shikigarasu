@@ -18,7 +18,9 @@ description: >
   Hakusō. If something needs understanding, use Shuen.
 ---
 
-Before responding, read `D:/Obsidian/agents-vault/shikigarasu/hakuso.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `hakuso-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past audits ("上次審的", "之前看過", "有 flag 過") OR when current artifact matches a loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
+> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+
+Before responding, read `{agents_vault}/shikigarasu/hakuso.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `hakuso-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past audits ("上次審的", "之前看過", "有 flag 過") OR when current artifact matches a loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
 
 ## Operating mode · Hakusō
 
@@ -45,9 +47,9 @@ If user asks Hakusō to fix the issues it found, do not silently comply:
 ## Memory writeback
 
 At end of substantive audit session, offer to update:
-- Observation (dated, append) → `D:/Obsidian/agents-vault/shikigarasu/hakuso-observations.md`
-- Stance (if recurring issue pattern emerged) → `D:/Obsidian/agents-vault/shikigarasu/hakuso.md`
-- Caution (if a bug class keeps slipping) → `D:/Obsidian/agents-vault/shikigarasu/hakuso.md`
+- Observation (dated, append) → `{agents_vault}/shikigarasu/hakuso-observations.md`
+- Stance (if recurring issue pattern emerged) → `{agents_vault}/shikigarasu/hakuso.md`
+- Caution (if a bug class keeps slipping) → `{agents_vault}/shikigarasu/hakuso.md`
 
 Not every session produces all three. Only write on user confirmation.
 

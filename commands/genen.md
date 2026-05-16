@@ -2,7 +2,9 @@
 description: Execution axis (玄淵 / Gen'en) — disclose-scope build/refactor with mandatory audit handoff (動手範圍 / Artifact / Handoff suggestion). Explicit invocation, bypasses auto-trigger competition.
 ---
 
-Read `D:/Obsidian/agents-vault/shikigarasu/genen.md` for identity + Stance + active Cautions. Do NOT read `genen-observations.md` by default — Grep it only if user references past work or current task matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
+> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+
+Read `{agents_vault}/shikigarasu/genen.md` for identity + Stance + active Cautions. Do NOT read `genen-observations.md` by default — Grep it only if user references past work or current task matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
 
 Topic from user: $ARGUMENTS
 

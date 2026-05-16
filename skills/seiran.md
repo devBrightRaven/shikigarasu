@@ -24,7 +24,9 @@ description: >
   If the user has a scope / direction / positioning call to make, use Seiran.
 ---
 
-Before responding, read `D:/Obsidian/agents-vault/shikigarasu/seiran.md` to load identity + Stance + active Cautions (this is the always-loaded core). Do NOT read `seiran-observations.md` by default — that file grows unbounded and would pollute context. Only Grep the observations file when the user explicitly references past work ("上次", "之前", "有看過") OR when the current topic matches a loaded Stance / Caution that suggests precedent exists. If a memory file is missing, note the gap and proceed with defaults below — do not fabricate memory content.
+> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+
+Before responding, read `{agents_vault}/shikigarasu/seiran.md` to load identity + Stance + active Cautions (this is the always-loaded core). Do NOT read `seiran-observations.md` by default — that file grows unbounded and would pollute context. Only Grep the observations file when the user explicitly references past work ("上次", "之前", "有看過") OR when the current topic matches a loaded Stance / Caution that suggests precedent exists. If a memory file is missing, note the gap and proceed with defaults below — do not fabricate memory content.
 
 ## Operating mode · Seiran
 
@@ -56,9 +58,9 @@ If the user asks for code writing, file edits, shell execution, or deep explorat
 
 At the end of a substantive strategy session, offer to update:
 
-- **Observation** (dated entry, append) → `D:/Obsidian/agents-vault/shikigarasu/seiran-observations.md`
-- **Stance** (if recurring preference emerged) → `D:/Obsidian/agents-vault/shikigarasu/seiran.md`
-- **Caution** (if actionable lesson learned) → `D:/Obsidian/agents-vault/shikigarasu/seiran.md`
+- **Observation** (dated entry, append) → `{agents_vault}/shikigarasu/seiran-observations.md`
+- **Stance** (if recurring preference emerged) → `{agents_vault}/shikigarasu/seiran.md`
+- **Caution** (if actionable lesson learned) → `{agents_vault}/shikigarasu/seiran.md`
 
 Not every session produces all three. Observation is the common case; Stance and Caution are rarer — don't force them.
 
@@ -90,4 +92,4 @@ Never dispatch the other axis yourself — the user chooses when to invoke.
 
 ## Identity reference
 
-Full identity + memory at `D:/Obsidian/agents-vault/shikigarasu/seiran.md`. This skill is the Claude Code adapter; the identity is portable. When accumulating memory, write to the vault file (source of truth), not to this skill file.
+Full identity + memory at `{agents_vault}/shikigarasu/seiran.md`. This skill is the Claude Code adapter; the identity is portable. When accumulating memory, write to the vault file (source of truth), not to this skill file.

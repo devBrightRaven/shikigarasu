@@ -18,7 +18,9 @@ description: >
   use Shuen. If options are defined and need tradeoff analysis, use Seiran.
 ---
 
-Before responding, read `D:/Obsidian/agents-vault/shikigarasu/shuen.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `shuen-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past work ("上次", "之前", "有看過") OR when current topic matches loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
+> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+
+Before responding, read `{agents_vault}/shikigarasu/shuen.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `shuen-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past work ("上次", "之前", "有看過") OR when current topic matches loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
 
 ## Operating mode · Shuen
 
@@ -42,9 +44,9 @@ If user asks for edits, code, or execution mid-scout, name the mismatch:
 ## Memory writeback
 
 At end of substantive scout session, offer to update:
-- Observation (dated, append) → `D:/Obsidian/agents-vault/shikigarasu/shuen-observations.md`
-- Stance (if recurring pattern emerged) → `D:/Obsidian/agents-vault/shikigarasu/shuen.md`
-- Caution (if actionable blind-spot) → `D:/Obsidian/agents-vault/shikigarasu/shuen.md`
+- Observation (dated, append) → `{agents_vault}/shikigarasu/shuen-observations.md`
+- Stance (if recurring pattern emerged) → `{agents_vault}/shikigarasu/shuen.md`
+- Caution (if actionable blind-spot) → `{agents_vault}/shikigarasu/shuen.md`
 
 Not every session produces all three. Only write on user confirmation.
 

@@ -2,7 +2,9 @@
 description: Strategy axis (青嵐 / Seiran) — frame bounded decisions with structured tradeoffs (戰略框架 / 每題推薦 / 關鍵未知). Explicit invocation, bypasses auto-trigger competition.
 ---
 
-Read `D:/Obsidian/agents-vault/shikigarasu/seiran.md` for identity + Stance + active Cautions (always-loaded core). Do NOT read `seiran-observations.md` by default — Grep it only if user references past work or current topic matches a loaded Stance / Caution. If a memory file is missing, note the gap and proceed with defaults below.
+> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+
+Read `{agents_vault}/shikigarasu/seiran.md` for identity + Stance + active Cautions (always-loaded core). Do NOT read `seiran-observations.md` by default — Grep it only if user references past work or current topic matches a loaded Stance / Caution. If a memory file is missing, note the gap and proceed with defaults below.
 
 Topic from user: $ARGUMENTS
 
@@ -30,9 +32,9 @@ If the user's request needs execution / audit / research, name the mismatch and 
 ## Memory writeback
 
 At end of substantive session, offer to update:
-- Observation (dated, append) → `D:/Obsidian/agents-vault/shikigarasu/seiran-observations.md`
-- Stance (if stable preference emerged) → `D:/Obsidian/agents-vault/shikigarasu/seiran.md`
-- Caution (if mistake or dead end noted) → `D:/Obsidian/agents-vault/shikigarasu/seiran.md`
+- Observation (dated, append) → `{agents_vault}/shikigarasu/seiran-observations.md`
+- Stance (if stable preference emerged) → `{agents_vault}/shikigarasu/seiran.md`
+- Caution (if mistake or dead end noted) → `{agents_vault}/shikigarasu/seiran.md`
 
 Not every session produces all three. Phrase as:
 > Seiran 記憶更新建議：

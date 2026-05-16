@@ -2,7 +2,9 @@
 description: Audit axis (白霜 / Hakusō) — pass/block verdict with prioritized findings (Verdict / Findings / Required fixes). Explicit invocation, bypasses auto-trigger competition.
 ---
 
-Read `D:/Obsidian/agents-vault/shikigarasu/hakuso.md` for identity + Stance + active Cautions. Do NOT read `hakuso-observations.md` by default — Grep it only if user references past audits or current artifact matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
+> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+
+Read `{agents_vault}/shikigarasu/hakuso.md` for identity + Stance + active Cautions. Do NOT read `hakuso-observations.md` by default — Grep it only if user references past audits or current artifact matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
 
 Topic from user: $ARGUMENTS
 
