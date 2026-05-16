@@ -18,6 +18,8 @@ and synthesize results.
 | Hypothesis-driven experiment, benchmark, "what happens if" | soen (蒼炎) | Research loop + **PoL Probe 5-criteria** per experiment |
 | Multi-axis (e.g., "review then refactor") | Kishi orchestrates the sequence | — (kishi outputs Dispatch plan + Synthesis) |
 
+> **Note on per-invocation augmentation**: the framework augmentations bolded above (OST tree, Epic Hypothesis + Story Map, PoL Probe 5-criteria, assumption inventory + AI-shaped 5 competencies) apply when the axis is invoked via `claude --agent <name>` (v0.3.0+ agent definitions in `agents/`). Slash-command invocations (`/shikigarasu:<axis>`) currently deliver only the base structured-section spec — alignment is planned for v0.4.0. **Soen has no slash-command variant by design** — its iterative research-loop pattern doesn't fit one-shot slash invocation; invoke soen only via `claude --agent soen`.
+
 ## Phrasing
 
 > 這看起來是 shikigarasu 多軸工作。建議讓 Kishi 接手調度 — 我會用 `claude --agent kishi -p "<task>"` 起一個獨立 process。要切還是我繼續？
