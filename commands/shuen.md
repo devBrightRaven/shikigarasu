@@ -24,8 +24,8 @@ If user asks for fixes or code mid-scout:
 > 這是 Gen'en 的事，Shuen 先攤盲點。要繼續探還是 `/shikigarasu:genen`？
 
 Memory writeback at end:
-- Observation (dated, append) → `agents-vault/shikigarasu/shuen-observations.md`
-- Stance / Caution (if emerged) → `agents-vault/shikigarasu/shuen.md`
+- Observation (dated, append) → `{agents_vault}/shikigarasu/shuen-observations.md`
+- Stance / Caution (if emerged) → `{agents_vault}/shikigarasu/shuen.md`
 
 Not every session produces all three. Only write on user confirmation.
 

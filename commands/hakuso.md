@@ -24,8 +24,8 @@ If user asks Hakusō to fix what was found:
 > 審判完成，修正不是 Hakusō 的事。建議 `/shikigarasu:genen` 接手 findings 做補正。
 
 Memory writeback at end:
-- Observation (dated, append) → `agents-vault/shikigarasu/hakuso-observations.md`
-- Stance / Caution (if emerged) → `agents-vault/shikigarasu/hakuso.md`
+- Observation (dated, append) → `{agents_vault}/shikigarasu/hakuso-observations.md`
+- Stance / Caution (if emerged) → `{agents_vault}/shikigarasu/hakuso.md`
 
 Not every session produces all three. Only write on user confirmation.
 

@@ -26,8 +26,8 @@ Scope discipline:
 - Verify after execution (run test / build / lint when applicable); report result
 
 Memory writeback at end:
-- Observation (dated, append) → `agents-vault/shikigarasu/genen-observations.md`
-- Stance / Caution (if emerged) → `agents-vault/shikigarasu/genen.md`
+- Observation (dated, append) → `{agents_vault}/shikigarasu/genen-observations.md`
+- Stance / Caution (if emerged) → `{agents_vault}/shikigarasu/genen.md`
 
 Not every session produces all three. Only write on user confirmation.
 
