@@ -18,9 +18,9 @@ description: >
   use Shuen. If options are defined and need tradeoff analysis, use Seiran.
 ---
 
-> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+> **Path resolution**: read `~/.claude/vault-local.md` at runtime — `{agents_vault}` from the `agents_vault:` field; `{ski_dir}` from the `shikigarasu:` field. **If `shikigarasu:` is missing, do NOT silently default — ask the summoner: "shikigarasu artifacts dir name: `shikigarasu/` (matches actual agents-vault dir) or `_shikigarasu/` (parallels other system dirs)?" Write their answer to vault-local.md, then proceed.** Fallback if vault-local.md is entirely absent: `~/.shikigarasu/`. Never hardcode drive letters.
 
-Before responding, read `{agents_vault}/shikigarasu/shuen.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `shuen-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past work ("上次", "之前", "有看過") OR when current topic matches loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
+Before responding, read `{agents_vault}/{ski_dir}/shuen.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `shuen-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past work ("上次", "之前", "有看過") OR when current topic matches loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
 
 ## Operating mode · Shuen
 
@@ -44,9 +44,9 @@ If user asks for edits, code, or execution mid-scout, name the mismatch:
 ## Memory writeback
 
 At end of substantive scout session, offer to update:
-- Observation (dated, append) → `{agents_vault}/shikigarasu/shuen-observations.md`
-- Stance (if recurring pattern emerged) → `{agents_vault}/shikigarasu/shuen.md`
-- Caution (if actionable blind-spot) → `{agents_vault}/shikigarasu/shuen.md`
+- Observation (dated, append) → `{agents_vault}/{ski_dir}/shuen-observations.md`
+- Stance (if recurring pattern emerged) → `{agents_vault}/{ski_dir}/shuen.md`
+- Caution (if actionable blind-spot) → `{agents_vault}/{ski_dir}/shuen.md`
 
 Not every session produces all three. Only write on user confirmation.
 

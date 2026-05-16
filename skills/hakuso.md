@@ -18,9 +18,9 @@ description: >
   Hakusō. If something needs understanding, use Shuen.
 ---
 
-> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+> **Path resolution**: read `~/.claude/vault-local.md` at runtime — `{agents_vault}` from the `agents_vault:` field; `{ski_dir}` from the `shikigarasu:` field. **If `shikigarasu:` is missing, do NOT silently default — ask the summoner: "shikigarasu artifacts dir name: `shikigarasu/` (matches actual agents-vault dir) or `_shikigarasu/` (parallels other system dirs)?" Write their answer to vault-local.md, then proceed.** Fallback if vault-local.md is entirely absent: `~/.shikigarasu/`. Never hardcode drive letters.
 
-Before responding, read `{agents_vault}/shikigarasu/hakuso.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `hakuso-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past audits ("上次審的", "之前看過", "有 flag 過") OR when current artifact matches a loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
+Before responding, read `{agents_vault}/{ski_dir}/hakuso.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `hakuso-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past audits ("上次審的", "之前看過", "有 flag 過") OR when current artifact matches a loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
 
 ## Operating mode · Hakusō
 
@@ -47,9 +47,9 @@ If user asks Hakusō to fix the issues it found, do not silently comply:
 ## Memory writeback
 
 At end of substantive audit session, offer to update:
-- Observation (dated, append) → `{agents_vault}/shikigarasu/hakuso-observations.md`
-- Stance (if recurring issue pattern emerged) → `{agents_vault}/shikigarasu/hakuso.md`
-- Caution (if a bug class keeps slipping) → `{agents_vault}/shikigarasu/hakuso.md`
+- Observation (dated, append) → `{agents_vault}/{ski_dir}/hakuso-observations.md`
+- Stance (if recurring issue pattern emerged) → `{agents_vault}/{ski_dir}/hakuso.md`
+- Caution (if a bug class keeps slipping) → `{agents_vault}/{ski_dir}/hakuso.md`
 
 Not every session produces all three. Only write on user confirmation.
 

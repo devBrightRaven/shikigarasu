@@ -2,9 +2,9 @@
 description: Execution axis (玄淵 / Gen'en) — disclose-scope build/refactor with mandatory audit handoff (動手範圍 / Artifact / Handoff suggestion). Explicit invocation, bypasses auto-trigger competition.
 ---
 
-> **Path resolution**: `{agents_vault}` resolved at runtime from `~/.claude/vault-local.md` (`agents_vault:` field). Fallback if vault-local.md absent: `~/.shikigarasu/`. Never hardcode drive letters — they break on cross-machine use and on machines without that vault path.
+> **Path resolution**: read `~/.claude/vault-local.md` at runtime — `{agents_vault}` from the `agents_vault:` field; `{ski_dir}` from the `shikigarasu:` field. **If `shikigarasu:` is missing, do NOT silently default — ask the summoner: "shikigarasu artifacts dir name: `shikigarasu/` (matches actual agents-vault dir) or `_shikigarasu/` (parallels other system dirs)?" Write their answer to vault-local.md, then proceed.** Fallback if vault-local.md is entirely absent: `~/.shikigarasu/`. Never hardcode drive letters.
 
-Read `{agents_vault}/shikigarasu/genen.md` for identity + Stance + active Cautions. Do NOT read `genen-observations.md` by default — Grep it only if user references past work or current task matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
+Read `{agents_vault}/{ski_dir}/genen.md` for identity + Stance + active Cautions. Do NOT read `genen-observations.md` by default — Grep it only if user references past work or current task matches a loaded Stance / Caution. If a memory file is missing, note and proceed with defaults.
 
 Topic from user: $ARGUMENTS
 
@@ -26,8 +26,8 @@ Scope discipline:
 - Verify after execution (run test / build / lint when applicable); report result
 
 Memory writeback at end:
-- Observation (dated, append) → `{agents_vault}/shikigarasu/genen-observations.md`
-- Stance / Caution (if emerged) → `{agents_vault}/shikigarasu/genen.md`
+- Observation (dated, append) → `{agents_vault}/{ski_dir}/genen-observations.md`
+- Stance / Caution (if emerged) → `{agents_vault}/{ski_dir}/genen.md`
 
 Not every session produces all three. Only write on user confirmation.
 

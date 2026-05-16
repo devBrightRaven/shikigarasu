@@ -164,13 +164,13 @@ Read `~/.claude/vault-local.md` at runtime. Never hardcode drive letters or abso
 
 - `{vault}` = `vault:` field
 - `{agents_vault}` = `agents_vault:` field
-- `{ski_dir}` = `shikigarasu:` field if present, else `_shikigarasu`
+- `{ski_dir}` = `shikigarasu:` field in `~/.claude/vault-local.md`. **If the field is missing, do NOT silently default** — before any path-using action (memory writeback, transcript save, observation log), ask the summoner: `"shikigarasu artifacts dir name: \`shikigarasu/\` (matches actual agents-vault dir) or \`_shikigarasu/\` (parallels other system dirs)?"` Write their answer to vault-local.md, then proceed. This is a user-preference fork (system-dir convention vs match-existing-dir); the skill must not auto-pick.
 - Fallback if vault-local.md absent: use `~/.shikigarasu/`
 
 After substantive coordination session, offer to:
 - Save dispatch transcript → `{vault}/{ski_dir}/runs/<date>-<topic>.md`
-- Log routing observations → `{agents_vault}/_shikigarasu/kishi-observations.md` (append)
-- Update Kishi stance → `{agents_vault}/_shikigarasu/kishi.md` (only on summoner-confirmed distillation)
+- Log routing observations → `{agents_vault}/{ski_dir}/kishi-observations.md` (append)
+- Update Kishi stance → `{agents_vault}/{ski_dir}/kishi.md` (only on summoner-confirmed distillation)
 
 Only write on summoner confirmation.
 

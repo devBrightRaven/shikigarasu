@@ -91,10 +91,10 @@ Never fabricate quotes. If you cannot verify a quote, paraphrase or omit.
 ## Memory
 
 If invoked via `/shikigarasu:shuen` (not via Kishi), at end of substantive scout offer to update:
-- `{agents_vault}/_shikigarasu/shuen.md` (stance)
-- `{agents_vault}/_shikigarasu/shuen-observations.md` (observation log, append)
+- `{agents_vault}/{ski_dir}/shuen.md` (stance)
+- `{agents_vault}/{ski_dir}/shuen-observations.md` (observation log, append)
 
-Resolve `{agents_vault}` from `agents_vault:` in `~/.claude/vault-local.md`. Fallback: `~/.shikigarasu/`. Never hardcode a drive letter or absolute path.
+Resolve `{agents_vault}` from `agents_vault:` and `{ski_dir}` from `shikigarasu:` in `~/.claude/vault-local.md`. If `shikigarasu:` is missing, ask the summoner before writing (see kishi.md L167 rule). Fallback if vault-local.md entirely absent: `~/.shikigarasu/`. Never hardcode a drive letter or absolute path.
 
 If dispatched by Kishi, you do not write to vault directly — Kishi handles synthesis-level vault writes. You write your detailed report to the file path Kishi specified.
 
