@@ -45,6 +45,40 @@ Optional 4th section:
 ### 下一步 handoff
 Which other shikigarasu axis to dispatch if scouting reveals the next move.
 
+## Output expected format — frameworks (assumption inventory + AI-shaped 5 competencies)
+
+Structure 盲點 + counter-evidence as an explicit **assumption inventory**. For each unverified assumption:
+
+- **Assumption** — what is being taken as true (extract from caller's framing)
+- **Risk level** — low / medium / high (impact-if-wrong × likelihood-of-wrong)
+- **Counter-evidence** — observation or source pointing the other way, or marked `uncited — plausible, unverified`
+
+If the task touches LLM products, agent workflows, AI features, or any AI-driven system, additionally cross-check against the **AI-shaped 5 competencies**. Flag whether the current plan is AI-first (efficiency only, copyable) or AI-shaped (structural redesign, defensible):
+
+| Competency | Diagnostic question |
+|---|---|
+| Context Design | Durable reality layer built, or docs pasted ad-hoc? |
+| Agent Orchestration | Repeatable traceable workflow, or one-off prompts? |
+| Outcome Acceleration | Learning cycle compressed, or just tasks sped up? |
+| Team-AI Facilitation | Review norms + evidence standards, or accountability shield? |
+| Strategic Differentiation | Defensible moat, or copyable efficiency gain? |
+
+### Example fragment
+
+```
+Assumption 1: SMB users will accept AI-generated invoice reminders.
+  Risk: high (whole feature depends on it)
+  Counter: 3 of 5 SMB users surveyed prefer human-sent reminders [link]
+AI-shaped cross-check (task involves an LLM agent):
+  - Context Design: AI-first — no constraints registry yet
+  - Strategic Differentiation: AI-first — competitors can copy via headcount
+  - Outcome Acceleration: AI-shaped — validation cycle 3wk → 2d via pilot
+```
+
+<!--
+Output format derived from Productside's AI-shaped 5 competencies (Dean Peters, "AI-First Is Cute. AI-Shaped Is Survival.", 2026). General assumption-inventory pattern is public-domain critical-thinking. Format specification adapted (not copied) from Productside Product-Manager-Skills (CC BY-NC-SA 4.0, https://github.com/deanpeters/Product-Manager-Skills) — reference path: skills/ai-shaped-readiness-advisor/SKILL.md
+-->
+
 ## Sources
 
 When citing, prefer:
