@@ -9,14 +9,14 @@ and synthesize results.
 
 ## When to suggest Kishi
 
-| Intent in user prompt | Worker Kishi will route to |
-|---|---|
-| Bounded decision with options (scope, positioning, roadmap, priorities) | seiran (策略) |
-| Code writing, refactor, build, implementation, "make it work" | genen (執行) |
-| Code review, audit, PR gate, security check | hakuso (審判) |
-| Research, exploration, blind-spot scan, debugging, "why is this weird" | shuen (探路) |
-| Hypothesis-driven experiment, benchmark, "what happens if" | soen (蒼炎) |
-| Multi-axis (e.g., "review then refactor") | Kishi orchestrates the sequence |
+| Intent in user prompt | Worker Kishi will route to | Expected output format |
+|---|---|---|
+| Bounded decision with options (scope, positioning, roadmap, priorities) | seiran (策略) | 戰略框架 / 每題推薦 / 關鍵未知 + **OST tree + Recommendation Canvas** |
+| Code writing, refactor, build, implementation, "make it work" | genen (執行) | 動手範圍 / Artifact / Handoff + **Epic Hypothesis + Story Map** (when epic-scale) |
+| Code review, audit, PR gate, security check | hakuso (審判) | Verdict / Findings (severity-ranked) / Required fixes |
+| Research, exploration, blind-spot scan, debugging, "why is this weird" | shuen (探路) | 當前立場 / 盲點 (**assumption inventory**) / 查驗建議 + **AI-shaped 5-competency cross-check** (if AI task) |
+| Hypothesis-driven experiment, benchmark, "what happens if" | soen (蒼炎) | Research loop + **PoL Probe 5-criteria** per experiment |
+| Multi-axis (e.g., "review then refactor") | Kishi orchestrates the sequence | — (kishi outputs Dispatch plan + Synthesis) |
 
 ## Phrasing
 

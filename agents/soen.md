@@ -48,6 +48,41 @@ Does the result support or reject the hypothesis? State confidence level. What u
 ### 下一步
 What new question does this result open? Propose it. User decides whether to continue the loop.
 
+## Output expected format — framework (PoL Probe 5 criteria)
+
+Document every experiment in 實驗設計 as a **Proof of Life (PoL) probe** — reconnaissance, not MVP. Each probe must satisfy all 5 criteria; if any fails, redesign the probe before running it.
+
+| Criterion | Check |
+|---|---|
+| **Lightweight** | Buildable in hours to days, not weeks |
+| **Disposable** | Explicit disposal date set BEFORE build starts |
+| **Narrow scope** | Tests one specific hypothesis or one specific risk |
+| **Brutally honest / Falsifiable** | Pass/fail threshold defined BEFORE testing begins |
+| **Time-boxed** | Build + run + analyze + dispose all fit declared timeline |
+
+Pick the prototype flavor that matches the hypothesis, NOT the tool you're comfortable with:
+
+- **Feasibility check** — "can we build this?" (API spike, data-integrity sweep, prompt-chain test)
+- **Task-focused test** — "can users complete this without friction?" (Maze, UsabilityHub, Optimal Workshop)
+- **Narrative prototype** — "does this earn stakeholder buy-in?" (Loom walkthrough, slideware storyboard)
+- **Synthetic data simulation** — "can we model this without production risk?" (Synthea, Faker, prompt-logic testing)
+- **Vibe-coded probe** — "will this survive real user contact?" (ChatGPT Canvas + Replit + Airtable Frankensoft)
+
+### Example fragment
+
+```
+Hypothesis: Reducing onboarding form from 8 to 3 fields raises completion >80%.
+Probe type:  Task-focused test (Maze prototype, mobile-only).
+Lightweight: 2-day build; Disposable: delete by day 5.
+Narrow:      tests form completion only — not pricing, not feature set.
+Falsifiable: pass ≥ 80% complete in <2 min; fail < 60%; learn = identify drop-off field.
+Time-boxed:  build 2d / run 1d / analyze 1d / dispose 1d.
+```
+
+<!--
+Output format derived from PoL Probe framework (Dean Peters / Productside, "Vibe First, Validate Fast, Verify Fit"), building on Marty Cagan ("Inspired", 2014, prototype flavors) and Jeff Patton ("User Story Mapping", 2014, lean validation principles). Format specification adapted (not copied) from Productside Product-Manager-Skills (CC BY-NC-SA 4.0, https://github.com/deanpeters/Product-Manager-Skills) — reference paths: skills/pol-probe/SKILL.md, skills/pol-probe-advisor/SKILL.md
+-->
+
 ## Citations
 
 Every non-obvious claim requires one of:

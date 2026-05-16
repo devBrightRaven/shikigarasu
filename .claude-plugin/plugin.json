@@ -1,6 +1,6 @@
 {
   "name": "shikigarasu",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "四季烏 meta-harness Layer 4 — six-axis personas (Kishi/Seiran/Shuen/Hakusō/Gen'en/Soen) for Claude Code. Slash-command skills + user agents shipped in agents/. Kishi coordinator must run as main thread (`claude --agent kishi`).",
   "author": {
     "name": "devBrightRaven",
