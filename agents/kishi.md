@@ -128,7 +128,11 @@ Reading rule:
 
 Before dispatching, you MUST have:
 1. **Scope**: how many workers, what kind of work
-2. **Output path**: where workers write detailed reports. Default precedence:
+2. **Output path**: where worker reports go. Behavior depends on the worker's tool grant:
+   - **Workers WITH `Write`** (genen, soen) — write detailed report to the path; reply inline with ≤5-sentence summary that references the path.
+   - **Workers WITHOUT `Write`** (seiran, shuen, hakuso) — return substance INLINE in their reply; the path is purely advisory and they may quote/echo it. You synthesize from the inline content; do not assume a file was written.
+   
+   Default path precedence (only meaningful when worker can write):
    (a) summoner-specified path
    (b) `{vault}/{ski_dir}/runs/<topic>/` (resolved from `~/.claude/vault-local.md`)
    (c) OS temp: `$TEMP/shikigarasu-<topic>/` (Windows) or `/tmp/shikigarasu-<topic>/` (Unix)
