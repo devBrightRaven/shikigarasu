@@ -7,7 +7,7 @@
     {
       "name": "shikigarasu",
       "source": "./",
-      "description": "四季烏 meta-harness Layer 4 — four-axis sync personas for Claude Code. Phase 1b MVP: Seiran (strategy) only. Shuen/Hakusō/Gen'en to follow."
+      "description": "四季烏 meta-harness Layer 4 — six-axis personas (Kishi/Seiran/Shuen/Hakusō/Gen'en/Soen) for Claude Code. Slash-command skills + user agents shipped in agents/. Kishi coordinator must run as main thread (`claude --agent kishi`)."
     }
   ]
 }

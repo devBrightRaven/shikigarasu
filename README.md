@@ -95,7 +95,7 @@ research: _subfolder/research/      # relative to vault, for Soen artifacts
 |------|--------------|---------------|
 | Kishi | Dispatch transcripts | `~/.shikigarasu/` |
 | Shuen | Scout memory | `~/.shikigarasu/` |
-| Soen | Research artifacts | `~/.claude/sessions/research-<topic>-<date>.md` |
+| Soen | Research artifacts | `$TEMP/soen-<topic>-<date>.md` (Windows) or `/tmp/soen-<topic>-<date>.md` (Unix) — vault path preferred when `vault-local.md` resolves `{vault}/{research}/`. Never under `~/.claude/` (deny-list). |
 
 The axes always show the target path before writing and require explicit confirmation. Nothing is written silently.
 
