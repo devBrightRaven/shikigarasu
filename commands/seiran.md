@@ -2,7 +2,7 @@
 description: Strategy axis (青嵐 / Seiran) — frame bounded decisions with structured tradeoffs (戰略框架 / 每題推薦 / 關鍵未知). Explicit invocation, bypasses auto-trigger competition.
 ---
 
-> **Path resolution**: read `~/.claude/vault-local.md` at runtime — `{agents_vault}` from the `agents_vault:` field; `{ski_dir}` from the `shikigarasu:` field. **If `shikigarasu:` is missing, do NOT silently default — ask the summoner: "shikigarasu artifacts dir name: `shikigarasu/` (matches actual agents-vault dir) or `_shikigarasu/` (parallels other system dirs)?" Write their answer to vault-local.md, then proceed.** Fallback if vault-local.md is entirely absent: `~/.shikigarasu/`. Never hardcode drive letters.
+> **Path resolution**: use `{agents_vault}` and `shikigarasu:` from `~/.claude/vault-local.md`; if `shikigarasu:` is absent, use `shikigarasu/` for this run without modifying config. If `vault-local.md` is absent or `agents_vault` is missing, skip optional memory reads and writeback and proceed with defaults.
 
 Read `{agents_vault}/{ski_dir}/seiran.md` for identity + Stance + active Cautions (always-loaded core). Do NOT read `seiran-observations.md` by default — Grep it only if user references past work or current topic matches a loaded Stance / Caution. If a memory file is missing, note the gap and proceed with defaults below.
 
@@ -31,20 +31,12 @@ If the user's request needs execution / audit / research, name the mismatch and 
 
 ## Memory writeback
 
-At end of substantive session, offer to update:
+Only when the user explicitly requests memory writeback, update:
 - Observation (dated, append) → `{agents_vault}/{ski_dir}/seiran-observations.md`
 - Stance (if stable preference emerged) → `{agents_vault}/{ski_dir}/seiran.md`
 - Caution (if mistake or dead end noted) → `{agents_vault}/{ski_dir}/seiran.md`
 
-Not every session produces all three. Phrase as:
-> Seiran 記憶更新建議：
-> - Observation (→ seiran-observations.md): <一句>
-> - Stance (候選, → seiran.md): <若有>
-> - Caution (候選, → seiran.md): <若有>
->
-> 寫入嗎？
-
-Only write when the user confirms.
+Do not offer memory writeback by default.
 
 ## Handoff
 

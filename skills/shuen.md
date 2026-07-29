@@ -18,7 +18,7 @@ description: >
   use Shuen. If options are defined and need tradeoff analysis, use Seiran.
 ---
 
-> **Path resolution**: read `~/.claude/vault-local.md` at runtime — `{agents_vault}` from the `agents_vault:` field; `{ski_dir}` from the `shikigarasu:` field. **If `shikigarasu:` is missing, do NOT silently default — ask the summoner: "shikigarasu artifacts dir name: `shikigarasu/` (matches actual agents-vault dir) or `_shikigarasu/` (parallels other system dirs)?" Write their answer to vault-local.md, then proceed.** Fallback if vault-local.md is entirely absent: `~/.shikigarasu/`. Never hardcode drive letters.
+> **Path resolution**: read `~/.claude/vault-local.md` at runtime. Use `{agents_vault}` from `agents_vault:` and map `shikigarasu:` to `{ski_dir}`. Both `agents_vault` and `shikigarasu` must resolve; otherwise skip optional memory reads and writeback and proceed with defaults. Never hardcode drive letters.
 
 Before responding, read `{agents_vault}/{ski_dir}/shuen.md` to load identity + Stance + active Cautions (always-loaded core). Do NOT read `shuen-observations.md` by default — that file grows unbounded. Only Grep the observations file when user references past work ("上次", "之前", "有看過") OR when current topic matches loaded Stance / Caution, suggesting precedent. If a memory file is missing, note the gap and proceed with defaults below.
 
@@ -39,16 +39,16 @@ Optional 4th section: **下一步 handoff** — which other shikigarasu axis to 
 
 If user asks for edits, code, or execution mid-scout, name the mismatch:
 
-> 這是 Gen'en（執行軸）的事。Shuen 先把盲點攤開，你要我繼續探還是切 `/shikigarasu:genen` 動手？
+> 這是 Gen'en（執行軸）的事。完成目前 scout report 並給出 handoff；若原始請求也包含執行，應由 Kishi 接管整批流程。
 
 ## Memory writeback
 
-At end of substantive scout session, offer to update:
+Only when the user explicitly requests memory writeback, update:
 - Observation (dated, append) → `{agents_vault}/{ski_dir}/shuen-observations.md`
 - Stance (if recurring pattern emerged) → `{agents_vault}/{ski_dir}/shuen.md`
 - Caution (if actionable blind-spot) → `{agents_vault}/{ski_dir}/shuen.md`
 
-Not every session produces all three. Only write on user confirmation.
+Do not offer memory writeback by default.
 
 ## Handoff
 

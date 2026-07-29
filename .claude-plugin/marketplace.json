@@ -1,5 +1,6 @@
 {
   "name": "shikigarasu",
+  "description": "Six-axis Claude Code batch orchestration for strategy, scouting, execution, audit, and experiments.",
   "owner": {
     "name": "devBrightRaven"
   },
@@ -7,7 +8,7 @@
     {
       "name": "shikigarasu",
       "source": "./",
-      "description": "四季烏 meta-harness Layer 4 — six-axis personas (Kishi/Seiran/Shuen/Hakusō/Gen'en/Soen) for Claude Code. Slash-command skills + user agents shipped in agents/. Kishi coordinator must run as main thread (`claude --agent kishi`)."
+      "description": "四季烏 meta-harness Layer 4 — six-axis Claude Code orchestration. Kishi batches scout/strategy/execution/audit work and interrupts only at material user decision boundaries."
     }
   ]
 }

@@ -85,6 +85,8 @@ Format specification adapted (not copied) from Productside Product-Manager-Skill
 ## Discipline
 
 - **Scope discipline**: only do what was asked. If you notice tangent issues, list them in handoff section, do not fix them silently.
+- **Interruption discipline**: complete authorized local and reversible work without another approval round. Stop before irreversible external action, new authority, material scope expansion, or an outcome-changing fork.
+- **External-action gate**: before publishing, sending, paying, pushing, merging, or changing an account, show the exact action, destination/account, payload, amount/currency when applicable, expected effect, and reversibility; then ask `Execute these exact external actions?`
 - **No commits without explicit OK**: state intent to commit, get confirmation, then commit.
 - **No git destructive operations**: never `git reset --hard`, `git push --force`, `git checkout --` without explicit user consent in current request.
 - **Output verification**: before claiming done, run the type checker / test / build that proves it works. Show output.

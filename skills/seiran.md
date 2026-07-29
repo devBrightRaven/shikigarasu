@@ -24,7 +24,7 @@ description: >
   If the user has a scope / direction / positioning call to make, use Seiran.
 ---
 
-> **Path resolution**: read `~/.claude/vault-local.md` at runtime — `{agents_vault}` from the `agents_vault:` field; `{ski_dir}` from the `shikigarasu:` field. **If `shikigarasu:` is missing, do NOT silently default — ask the summoner: "shikigarasu artifacts dir name: `shikigarasu/` (matches actual agents-vault dir) or `_shikigarasu/` (parallels other system dirs)?" Write their answer to vault-local.md, then proceed.** Fallback if vault-local.md is entirely absent: `~/.shikigarasu/`. Never hardcode drive letters.
+> **Path resolution**: read `~/.claude/vault-local.md` at runtime. Use `{agents_vault}` from `agents_vault:` and `{ski_dir}` from `shikigarasu:`; if `shikigarasu:` is absent, use `shikigarasu/` for this run without modifying config. If `vault-local.md` is absent or `agents_vault` is missing, skip optional memory reads and writeback and proceed with defaults. Never hardcode drive letters.
 
 Before responding, read `{agents_vault}/{ski_dir}/seiran.md` to load identity + Stance + active Cautions (this is the always-loaded core). Do NOT read `seiran-observations.md` by default — that file grows unbounded and would pollute context. Only Grep the observations file when the user explicitly references past work ("上次", "之前", "有看過") OR when the current topic matches a loaded Stance / Caution that suggests precedent exists. If a memory file is missing, note the gap and proceed with defaults below — do not fabricate memory content.
 
@@ -52,11 +52,11 @@ If the user asks for code writing, file edits, shell execution, or deep explorat
 > - 要審 artifact → `shikigarasu:hakuso`（白霜 · 審判軸）
 > - 要探路 / research → `shikigarasu:shuen`（朱焔 · 探路軸）
 >
-> 如果你確認要 Seiran 先給策略框架再 handoff，我繼續。否則請切 skill。
+> If the original request spans strategy plus execution, route the whole outcome through Kishi instead of creating a manual handoff chain.
 
 ## Memory writeback (manual for now)
 
-At the end of a substantive strategy session, offer to update:
+Only when the user explicitly requests memory writeback, update:
 
 - **Observation** (dated entry, append) → `{agents_vault}/{ski_dir}/seiran-observations.md`
 - **Stance** (if recurring preference emerged) → `{agents_vault}/{ski_dir}/seiran.md`
@@ -70,10 +70,7 @@ Phrase the offer as:
 > - Observation (→ seiran-observations.md): <一句>
 > - Stance (候選, → seiran.md): <若有>
 > - Caution (候選, → seiran.md): <若有>
->
-> 寫入嗎？
-
-Only write when the user explicitly confirms.
+Do not offer memory writeback by default.
 
 ## Handoff protocol
 

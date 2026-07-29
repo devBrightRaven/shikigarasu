@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shikigarasu"
+  short_description: "Run autonomous work through independent review gates"
+  default_prompt: "Use $shikigarasu to drive this authorized outcome through a replenished queue and independent review."
