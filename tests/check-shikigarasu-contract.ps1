@@ -139,7 +139,7 @@ if ($AgentDirPath) {
 
 if ($KishiPath) {
     $kishi = Get-Content -Raw $KishiPath
-    $required = @('Coordinate; do not execute', 'If `Agent` is unavailable', 'Mis-invoked without Agent dispatch capability.', 'Then stop.', 'two review passes', 'producer and both reviewers must be different agents', 'Refill freed slots', 'collective ticket ceiling')
+    $required = @('Coordinate; do not execute', 'If `Agent` is unavailable', 'Mis-invoked without Agent dispatch capability.', 'Then stop.', 'Require a second review pass when the first reported findings', 'the producer and its reviewers must be different agents', 'Refill freed slots', 'collective ticket ceiling')
     $missing = @($required | Where-Object { -not $kishi.Contains($_) })
     if ($kishi -match 'description:[^\r\n]*Agent\(subagent_type=kishi\)') { $missing += 'Kishi description must not advertise nested invocation' }
     if ($missing.Count) {
@@ -218,10 +218,10 @@ if ($ReadmePath -and $KishiPath -and (Test-Path $ReadmePath) -and (Test-Path $Ki
     $persistencePhrase = 'explicitly requests persistent continuation'
     if (($readmeText -notmatch $goalRegex) -and ($kishiText -notmatch $goalRegex) -and $readmeText.Contains($persistencePhrase) -and $kishiText.Contains($persistencePhrase)) { Write-Output 'PASS: README and kishi.md persistence boundary tightened' } else { Write-Output 'FAIL: README and kishi.md persistence boundary tightened'; $failed++ }
 
-    if ($kishiText.Contains('producer and both reviewers must be different agents')) { Write-Output 'PASS: producer excluded from serving as either reviewer' } else { Write-Output 'FAIL: producer excluded from serving as either reviewer'; $failed++ }
+    if ($kishiText.Contains('the producer and its reviewers must be different agents')) { Write-Output 'PASS: producer excluded from serving as either reviewer' } else { Write-Output 'FAIL: producer excluded from serving as either reviewer'; $failed++ }
 
-    $anchorsHeld = $kishiText.Contains('Require two review passes for every completed ticket, including when the first pass reports no findings.') -and $kishiText.Contains('A failed ticket may reopen only as a strictly narrower ticket.')
-    if ($anchorsHeld) { Write-Output 'PASS: two review passes and reopen-narrower/cap sentences unchanged' } else { Write-Output 'FAIL: two review passes and reopen-narrower/cap sentences unchanged'; $failed++ }
+    $anchorsHeld = $kishiText.Contains('Require a second review pass when the first reported findings') -and $kishiText.Contains('A failed ticket may reopen only as a strictly narrower ticket.')
+    if ($anchorsHeld) { Write-Output 'PASS: scoped second-pass rule and reopen-narrower sentences present' } else { Write-Output 'FAIL: scoped second-pass rule and reopen-narrower sentences present'; $failed++ }
 }
 
 if ($DispatchPath -and (Test-Path $DispatchPath)) {
