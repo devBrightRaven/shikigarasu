@@ -8,7 +8,8 @@ param(
     [string]$HakusoPath,
     [string]$SoenPath,
     [string]$AgentDirPath,
-    [string[]]$MemoryAdapterPath
+    [string[]]$MemoryAdapterPath,
+    [switch]$RepoOnly
 )
 
 Set-StrictMode -Version Latest
@@ -39,27 +40,31 @@ function Read-AgentFrontmatter([string]$Path) {
     [pscustomobject]@{ Model = $model; Tools = @($toolsText -split ',' | ForEach-Object { $_.Trim() }) }
 }
 
-$skill = Get-Content -Raw $SkillPath
-$cases = [ordered]@{
-    'queue: delegate within available capacity, no fixed cap' = @('Delegate every substantive ready ticket', 'refill freed capacity', 'no fixed cap to total ticket count', 'without blocking authorized work')
-    'independent review: producer and reviewers differ' = @('fresh-context independent reviewer', 'producer and both reviewers must be different workers', 'They never close a ticket')
-    'convergence: collective ceiling on fix rounds' = @('two review passes', 'collective ticket ceiling', 'newly introduced findings do not reset')
-    'evidence: closure requires both passes on final result' = @('Close only after both passes', 'Never report success for a ticket that has not passed both closure gates')
-}
-
 $failed = 0
-foreach ($case in $cases.GetEnumerator()) {
-    $missing = @($case.Value | Where-Object { -not $skill.Contains($_) })
-    if ($missing.Count) {
-        Write-Output "FAIL: $($case.Key)"
-        $missing | ForEach-Object { Write-Output "  missing: $_" }
-        $failed++
-    } else {
-        Write-Output "PASS: $($case.Key)"
+if ($RepoOnly) {
+    Write-Output 'SKIP: shared shikigarasu-common contract cases (machine runtime, -RepoOnly)'
+} else {
+    $skill = Get-Content -Raw $SkillPath
+    $cases = [ordered]@{
+        'queue: delegate within available capacity, no fixed cap' = @('Delegate every substantive ready ticket', 'refill freed capacity', 'no fixed cap to total ticket count', 'without blocking authorized work')
+        'independent review: producer and reviewers differ' = @('fresh-context independent reviewer', 'producer and both reviewers must be different workers', 'They never close a ticket')
+        'convergence: collective ceiling on fix rounds' = @('two review passes', 'collective ticket ceiling', 'newly introduced findings do not reset')
+        'evidence: closure requires both passes on final result' = @('Close only after both passes', 'Never report success for a ticket that has not passed both closure gates')
     }
-}
 
-Write-Output "$($cases.Count - $failed)/$($cases.Count) contract cases passed"
+    foreach ($case in $cases.GetEnumerator()) {
+        $missing = @($case.Value | Where-Object { -not $skill.Contains($_) })
+        if ($missing.Count) {
+            Write-Output "FAIL: $($case.Key)"
+            $missing | ForEach-Object { Write-Output "  missing: $_" }
+            $failed++
+        } else {
+            Write-Output "PASS: $($case.Key)"
+        }
+    }
+
+    Write-Output "$($cases.Count - $failed)/$($cases.Count) contract cases passed"
+}
 if ($DispatchPath) {
     $dispatch = Get-Content -Raw $DispatchPath
     $dispatchCases = [ordered]@{
@@ -197,16 +202,20 @@ foreach ($path in $shuenAdapters) {
 $dupSkillPath = Join-Path $repoRoot 'agent-skills/shikigarasu'
 if (Test-Path $dupSkillPath) { Write-Output 'FAIL: plugin repo has no duplicate agent-skills/shikigarasu'; $failed++ } else { Write-Output 'PASS: plugin repo has no duplicate agent-skills/shikigarasu' }
 
-$claudeSharedSkill = Join-Path $HOME '.claude/skills/shikigarasu-common/SKILL.md'
-if ((Test-Path $claudeSharedSkill) -and (Get-Content -Raw $claudeSharedSkill).Contains('name: shikigarasu-common')) { Write-Output 'PASS: Claude runtime skills carries shikigarasu-common' } else { Write-Output 'FAIL: Claude runtime skills carries shikigarasu-common'; $failed++ }
+if ($RepoOnly) {
+    Write-Output 'SKIP: runtime mirror/identity checks (machine runtime, -RepoOnly)'
+} else {
+    $claudeSharedSkill = Join-Path $HOME '.claude/skills/shikigarasu-common/SKILL.md'
+    if ((Test-Path $claudeSharedSkill) -and (Get-Content -Raw $claudeSharedSkill).Contains('name: shikigarasu-common')) { Write-Output 'PASS: Claude runtime skills carries shikigarasu-common' } else { Write-Output 'FAIL: Claude runtime skills carries shikigarasu-common'; $failed++ }
 
-$dotclaudeSharedSkill = 'C:/Code/dotclaude/agent-skills/shikigarasu-common/SKILL.md'
-$dotclaudeOldSkill = 'C:/Code/dotclaude/agent-skills/shikigarasu'
-if ((Test-Path $dotclaudeSharedSkill) -and -not (Test-Path $dotclaudeOldSkill)) { Write-Output 'PASS: dotclaude mirrors shikigarasu-common, old identity gone' } else { Write-Output 'FAIL: dotclaude mirrors shikigarasu-common, old identity gone'; $failed++ }
+    $dotclaudeSharedSkill = 'C:/Code/dotclaude/agent-skills/shikigarasu-common/SKILL.md'
+    $dotclaudeOldSkill = 'C:/Code/dotclaude/agent-skills/shikigarasu'
+    if ((Test-Path $dotclaudeSharedSkill) -and -not (Test-Path $dotclaudeOldSkill)) { Write-Output 'PASS: dotclaude mirrors shikigarasu-common, old identity gone' } else { Write-Output 'FAIL: dotclaude mirrors shikigarasu-common, old identity gone'; $failed++ }
 
-$claudeOldSkill = Join-Path $HOME '.claude/skills/shikigarasu'
-$agentsOldSkill = Join-Path $HOME '.agents/skills/shikigarasu'
-if (-not (Test-Path $claudeOldSkill) -and -not (Test-Path $agentsOldSkill)) { Write-Output 'PASS: no shared/native collision on the shikigarasu identity' } else { Write-Output 'FAIL: no shared/native collision on the shikigarasu identity'; $failed++ }
+    $claudeOldSkill = Join-Path $HOME '.claude/skills/shikigarasu'
+    $agentsOldSkill = Join-Path $HOME '.agents/skills/shikigarasu'
+    if (-not (Test-Path $claudeOldSkill) -and -not (Test-Path $agentsOldSkill)) { Write-Output 'PASS: no shared/native collision on the shikigarasu identity' } else { Write-Output 'FAIL: no shared/native collision on the shikigarasu identity'; $failed++ }
+}
 
 if ($ReadmePath -and $KishiPath -and (Test-Path $ReadmePath) -and (Test-Path $KishiPath)) {
     $readmeText = Get-Content -Raw $ReadmePath
