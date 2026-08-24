@@ -1,0 +1,20 @@
+{
+  "name": "shikigarasu-codex",
+  "interface": {
+    "displayName": "Shikigarasu for Codex"
+  },
+  "plugins": [
+    {
+      "name": "shikigarasu",
+      "source": {
+        "source": "local",
+        "path": "./codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

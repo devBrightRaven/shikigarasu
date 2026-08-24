@@ -1,70 +1,61 @@
 # Shikigarasu Axis Dispatch
 
-**Guard**: this rule only applies if the kishi agent is installed (i.e. `~/.claude/agents/kishi.md` exists, or kishi appears in the session's available agent list). If kishi is NOT installed, treat this entire file as inactive — do not surface Kishi suggestions in a session without the agent that backs them.
+**Guard**: active only if kishi is installed (`~/.claude/agents/kishi.md`
+exists or kishi appears in the session's agent list). Otherwise treat this
+whole file as inactive.
 
-When a user request matches a shikigarasu-flavored task (strategy / scout / execution /
-audit / research), **suggest** invoking Kishi rather than executing directly. Kishi is
-the dispatcher; she will route to the right worker (seiran/shuen/genen/hakuso/soen)
-and synthesize results.
+Matching tasks route directly with no suggestion round-trip. Kishi completes
+the authorized local, reversible batch and interrupts only for irreversible external action,
+new authority, material scope expansion, or an
+outcome-changing fork. `[plan only]` remains an explicit preview mode.
 
-## When to suggest Kishi
+Authority precedence remains: current user instructions, applicable repository
+instructions, current verified files/state, then memory. This dispatch rule
+only selects an axis; it does not override that ordering or grant new authority.
+Kishi owns convergence for the current turn only. Cross-turn continuation
+happens only when a `/goal` is confirmed active in the session or the user
+explicitly requests persistent continuation; never infer an equivalent
+mechanism or create persistence on Kishi's own initiative. Without that
+confirmation, finish the turn and stop.
 
-| Intent in user prompt | Worker Kishi will route to |
+## Routing
+
+| Intent in user prompt | Route (dispatch directly) |
 |---|---|
-| Bounded decision with options (scope, positioning, roadmap, priorities) | seiran (策略) |
-| Code writing, refactor, build, implementation, "make it work" | genen (執行) |
-| Code review, audit, PR gate, security check | hakuso (審判) |
-| Research, exploration, blind-spot scan, debugging, "why is this weird" | shuen (探路) |
-| Hypothesis-driven experiment, benchmark, "what happens if" | soen (蒼炎) |
-| Multi-axis (e.g., "review then refactor") | Kishi orchestrates the sequence |
+| Bounded decision with options (scope, positioning, roadmap, priorities) | seiran 策略 |
+| Implement / refactor / fix / "make it work" | genen 執行 |
+| Code review, audit, PR gate, security check | hakuso 審判 |
+| Research, blind-spot scan, debugging recon, "why is this weird" | shuen 探路 |
+| Hypothesis-driven experiment, benchmark, "what happens if" | soen 蒼炎 (Agent tool; no slash command by design) |
+| Needs ≥2 axes (review→fix→verify, research→build, ...) | kishi orchestrates |
 
-## Phrasing
+Single known axis → that worker directly through the Agent tool, or a slash command when available;
+do not wrap one-axis jobs in kishi.
 
-> 這看起來是 shikigarasu 多軸工作。建議讓 Kishi 接手調度 — 我會用 `claude --agent kishi -p "<task>"` 起一個獨立 process。要切還是我繼續？
+kishi invocation by weight:
 
-Wait for confirmation, then invoke via Bash:
+- **Light/medium, interactive**: the current main session applies the Kishi coordinator protocol directly using its Agent tool. Do not invoke Kishi as a nested agent.
+- **Heavy/detached**: start exactly one `claude --agent kishi -p "<task>"` parent coordinator. Append ` [plan only]` to preview routing without dispatching. Never start one CLI process per ticket; the parent uses native Agent coordination.
 
-```bash
-claude --agent kishi -p "<task description>"
-```
+For multi-axis tasks, pass the full requested outcome to Kishi once. Do not
+return to the user between scout, strategy, execution, and audit phases unless
+the interruption policy above applies.
 
-**DO NOT invoke as a subagent** (i.e. do not use `Agent(subagent_type=kishi, ...)`). Subagents have no `Agent` tool in Claude Code, so kishi-as-subagent cannot dispatch and will either abort or self-execute. Kishi must run as a main-thread agent. Verified 2026-05-15; see memory `kishi-must-run-as-main-agent`.
+## Still skipped (relevance filter, not a confirmation gate)
 
-For pre-review of routing without dispatching, append ` [plan only]` to the task:
+- Casual chat, factual lookup, one-liner, or clearly outside all axes
+- User said "直接做" / "skip shikigarasu" — handle inline/generic instead
+- `brightraven-resolve:resolve` already triggered — defer to resolve
+- Use capacity-aware waves bounded by currently available subagent slots.
+  Refill freed slots immediately; do not launch hundreds of workers at once or
+  stack several Kishi flows concurrently. There is no fixed cap on total
+  tickets: notify unusually large queues and their expected batching without blocking authorized work.
+  In short, do not stack Kishi flows.
 
-```bash
-claude --agent kishi -p "<task description> [plan only]"
-```
+`?ki` anywhere in the message now forces axis routing even inside the skip
+zone: state the chosen axis + the matching fragment in one line, then
+dispatch — no confirmation wait.
 
-Power-user shortcut: if you already know the axis, slash commands still work
-(`/shikigarasu:seiran` etc.) — those invoke the plugin skill directly.
-
-## Force-check token: `?ki`
-
-If the summoner's message contains `?ki` (anywhere), **override all skip conditions below**. Perform the axis-check regardless and offer one axis (or explicitly say "no match").
-
-Why this exists: skip conditions are conservative; `brightraven-resolve` auto-trigger can silently pre-empt this rule; the summoner sometimes knows a turn is axis-worthy when surface cues don't show it.
-
-When `?ki` fires:
-1. State the matching axis + quote the bit of the task that matches.
-2. Note what would have happened without `?ki` (e.g. "Would have skipped because: continuation of prior turn"). This helps the summoner learn when the token is load-bearing vs redundant.
-3. Wait for `yes` / axis override / `no`.
-
-Example:
-> Summoner: `?ki 我想搞清楚 migration script 為什麼掛在 Postgres`
-> You: `?ki → shuen (research). Match: "搞清楚 X 為什麼掛". (Without ?ki, would have suggested anyway.) Proceed with claude --agent shuen -p "..."? (yes / pick axis / no)`
-
-## Skip the suggestion when
-
-(Override: `?ki` in the summoner's message bypasses everything below.)
-
-- User said "just do it" / "直接做" / "skip shikigarasu"
-- Casual chat, factual lookup, one-liner
-- Already in a Kishi-dispatched flow this turn
-- Request is clearly outside all axes (file listing, status query, env check)
-- User just rejected a shikigarasu suggestion this session
-- Already triggered by `brightraven-resolve:resolve` — defer to resolve
-
-## Not handled here
-
-Async / monitoring / scheduled requests → Layer 5 OpenClaw daemon, not Layer 4 axis.
+Async / monitoring / scheduled requests are not an axis job. Route to the
+user's OpenClaw daemon or schedule/loop skills when available; otherwise report the unsupported persistence requirement
+instead of assuming continuation.

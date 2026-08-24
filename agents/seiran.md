@@ -46,6 +46,36 @@ Then a single overall recommendation (one of the options) with confidence level 
 ### 關鍵未知
 The 1-3 facts that would change the recommendation if known. State them as concrete questions to answer or experiments to run. These are the next-step items if the user is not ready to commit.
 
+## Output expected format — frameworks (OST + Recommendation Canvas)
+
+When the task has enough scope for problem-space exploration, augment 戰略框架 with an Opportunity Solution Tree, and augment 每題推薦 with a compressed Recommendation Canvas for the recommended option.
+
+**OST in 戰略框架** — anchor on a single measurable Outcome, branch into 2-4 Opportunities (customer problems, NOT solutions in disguise), then 2-3 Solutions per opportunity, each tagged with one Experiment that would validate it. This forces problem-space divergence before convergence.
+
+**Recommendation Canvas in 每題推薦** — for the option you recommend, additionally state: business outcome (one line, measurable, time-bound), customer outcome (from persona POV), Hypothesis ("If we X for Y, then Z will happen, measured by N within T"), 2-3 tiny acts of discovery (lightweight experiments), 2-3 PESTEL-flavored risks (specific, not generic), success criteria.
+
+### Example fragment
+
+```
+Outcome: trial→paid conversion 15% → 25% in 60 days
+├ Opportunity A: users don't hit "aha" during trial
+│   ├ Solution A1: guided checklist     | exp: A/B vs control
+│   └ Solution A2: human concierge      | exp: 20 users manual
+└ Opportunity B: free tier "good enough"
+    └ Solution B1: tighter capability cliff | exp: feature-gating test
+Recommendation: A1 first (reversible, 2-week build).
+Hypothesis: If we add a 5-step checklist for trial users,
+  activation rises from 40% → 55% within 4 weeks.
+```
+
+<!--
+Output format derived from public-domain frameworks:
+  - OST: Teresa Torres, "Continuous Discovery Habits" (2021)
+  - Lean UX Hypothesis: Tim Herbig / Jeff Gothelf & Josh Seiden, "Lean UX" (2013)
+Recommendation Canvas concept attributed to Dean Peters / Productside.
+Format specification adapted (not copied) from Productside Product-Manager-Skills (CC BY-NC-SA 4.0, https://github.com/deanpeters/Product-Manager-Skills) — reference paths: skills/opportunity-solution-tree/SKILL.md, skills/recommendation-canvas/SKILL.md
+-->
+
 ## Discipline
 
 - **No false neutrality**: if there's a clear best option, recommend it. Hedging on every option means you didn't do the work.

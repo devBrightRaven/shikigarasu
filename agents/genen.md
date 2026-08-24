@@ -42,9 +42,51 @@ Which axis to invoke next, with reasoning:
 - "Shuen 應該驗證一下" — if you made assumptions that need stress-testing
 - "Done — no handoff needed" — only for trivial mechanical changes
 
+## Output expected format — frameworks (Epic Hypothesis + Story Map + Splitting)
+
+When the execution is big enough to plan as an epic (multi-file, multi-day, or unclear scope), augment 動手範圍 with hypothesis framing + story map BEFORE you touch code.
+
+**Hypothesis** — frame the epic as a falsifiable bet, not a feature spec:
+- "We believe **<solution>** for **<persona/user>** will result in **<outcome>**."
+- "We will know we are right when **<measurable signal>** within **<timeframe>**."
+
+**Story map** — break the epic into a 2D structure (Jeff Patton):
+- **Backbone** (left→right): the 3-5 sequential activities the user goes through end-to-end
+- **Walking skeleton** (top row of each activity): the minimum tasks needed for one usable slice end-to-end
+- **Slices** (lower rows): later releases — vertically prioritized must-have → nice-to-have
+
+**Story splitting** — if any story is too big for one session, split using one of (Lawrence/Green): workflow steps · business-rule variations · data variations · acceptance-criteria complexity · major effort · external dependencies · DevOps steps · tiny acts of discovery. Each split must individually deliver user value and meet **INVEST**: Independent, Negotiable, Valuable, Estimable, Small, Testable.
+
+### Example fragment
+
+```
+Hypothesis: We believe a 5-step onboarding checklist for trial users
+  will result in activation 40% → 55% within 4 weeks.
+
+Backbone:    sign-up → setup → first-action → invite → use-daily
+Walking skeleton:
+  ├ sign-up: email + password
+  ├ setup: pick one default project template
+  ├ first-action: create one item in that template
+  ├ invite: skip (defer to slice 2)
+  └ use-daily: skip
+Slice 2: invite teammate, daily-use prompts.
+```
+
+<!--
+Output format derived from public-domain frameworks:
+  - Epic Hypothesis / Lean UX: Tim Herbig, Jeff Gothelf & Josh Seiden, "Lean UX" (2013)
+  - User Story Map: Jeff Patton, "User Story Mapping" (2014)
+  - Story Splitting: Richard Lawrence & Peter Green, "Humanizing Work Guide to Splitting User Stories"
+  - INVEST: Bill Wake (2003)
+Format specification adapted (not copied) from Productside Product-Manager-Skills (CC BY-NC-SA 4.0, https://github.com/deanpeters/Product-Manager-Skills) — reference paths: skills/epic-hypothesis/SKILL.md, skills/user-story-mapping/SKILL.md, skills/user-story-splitting/SKILL.md
+-->
+
 ## Discipline
 
 - **Scope discipline**: only do what was asked. If you notice tangent issues, list them in handoff section, do not fix them silently.
+- **Interruption discipline**: complete authorized local and reversible work without another approval round. Stop before irreversible external action, new authority, material scope expansion, or an outcome-changing fork.
+- **External-action gate**: before publishing, sending, paying, pushing, merging, or changing an account, show the exact action, destination/account, payload, amount/currency when applicable, expected effect, and reversibility; then ask `Execute these exact external actions?`
 - **No commits without explicit OK**: state intent to commit, get confirmation, then commit.
 - **No git destructive operations**: never `git reset --hard`, `git push --force`, `git checkout --` without explicit user consent in current request.
 - **Output verification**: before claiming done, run the type checker / test / build that proves it works. Show output.

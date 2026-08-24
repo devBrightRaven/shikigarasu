@@ -1,0 +1,34 @@
+{
+  "name": "shikigarasu",
+  "version": "0.3.1+codex.20260822210609",
+  "description": "Self-contained Codex coordination with bounded authority and independent review gates.",
+  "author": {
+    "name": "devBrightRaven",
+    "url": "https://github.com/devBrightRaven"
+  },
+  "repository": "https://github.com/devBrightRaven/shikigarasu",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "agent-harness",
+    "orchestration",
+    "shikigarasu"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Shikigarasu",
+    "shortDescription": "Codex-native multi-agent coordination",
+    "longDescription": "Coordinate authorized multi-workstream outcomes through native Codex agents, portable model routing, independent review, and explicit completion gates.",
+    "developerName": "devBrightRaven",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use Shikigarasu to coordinate this task until verified.",
+      "Run this goal through independent review gates.",
+      "Decompose and coordinate this authorized outcome."
+    ]
+  }
+}

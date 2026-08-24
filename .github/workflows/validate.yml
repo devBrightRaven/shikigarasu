@@ -1,0 +1,22 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # Machine-coupled runtime checks are skipped in CI; the full battery
+      # (including runtime mirror/identity checks) runs locally via `npm test`
+      # and the global pre-commit hook.
+      - run: pwsh -NoProfile -File tests/check-shikigarasu-contract.ps1 -RepoOnly
+      - run: pwsh -NoProfile -File tests/check-codex-authority.ps1
+      - run: python -X utf8 tests/test_agy_routing.py
+      - run: python -X utf8 tests/test_probe_shikigarasu_contract.py
