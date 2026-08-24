@@ -1,7 +1,7 @@
 {
   "name": "shikigarasu",
-  "version": "0.3.1+codex.20260728141631",
-  "description": "Codex-native multi-agent coordination with bounded authority and review gates.",
+  "version": "0.3.1+codex.20260822210609",
+  "description": "Self-contained Codex coordination with bounded authority and independent review gates.",
   "author": {
     "name": "devBrightRaven",
     "url": "https://github.com/devBrightRaven"
@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "Shikigarasu",
     "shortDescription": "Codex-native multi-agent coordination",
-    "longDescription": "Coordinate authorized work through bounded queues, native Codex subagents, independent review, and explicit completion gates.",
+    "longDescription": "Coordinate authorized multi-workstream outcomes through native Codex agents, portable model routing, independent review, and explicit completion gates.",
     "developerName": "devBrightRaven",
     "category": "Developer Tools",
     "capabilities": [

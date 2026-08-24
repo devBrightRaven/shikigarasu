@@ -23,6 +23,19 @@ Kishi is the recommended entry point for multi-axis tasks. Single-axis tasks can
 
 ## Installation
 
+<!-- CODEX_INSTALL_START -->
+### Codex
+
+From a downloaded checkout, add this repository as a local marketplace and install its self-contained Codex plugin:
+
+```sh
+codex plugin marketplace add .
+codex plugin add shikigarasu@shikigarasu-codex
+```
+
+After pulling an update, run the `codex plugin add` command again, then start a new thread so Codex discovers the refreshed skill. The Codex plugin does not require personal `AGENTS.md` changes or the Claude shared contract.
+<!-- CODEX_INSTALL_END -->
+
 While enabled, the plugin supplies namespaced agents, commands, and rules. The copying steps below are optional and create unnamespaced personal entrypoints.
 
 ### 1. Plugin (slash commands)
