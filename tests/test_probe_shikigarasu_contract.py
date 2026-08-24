@@ -20,7 +20,7 @@ class ShikigarasuContractProbeTests(unittest.TestCase):
             "source_path": str(path.resolve()),
             "source_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "skill_name": "shikigarasu",
-            "queue_states": PROBE.QUEUE_STATES,
+            "queue_states": list(PROBE.QUEUE_STATES),
             "review_passes": 2,
             "reviewers_fresh_context": True,
             "producer_and_reviewers_distinct": True,
@@ -31,8 +31,8 @@ class ShikigarasuContractProbeTests(unittest.TestCase):
             "external_actions_need_authorization": True,
             "scope_expansion_needs_authorization": True,
             "persistence_needs_explicit_authorization": True,
-            "protected_actions": PROBE.PROTECTED_ACTIONS,
-            "evidence_report_fields": PROBE.EVIDENCE_FIELDS,
+            "protected_actions": list(PROBE.PROTECTED_ACTIONS),
+            "evidence_report_fields": list(PROBE.EVIDENCE_FIELDS),
         }
 
     def test_probe_is_bound_to_canonical_plugin_source(self):
@@ -46,6 +46,29 @@ class ShikigarasuContractProbeTests(unittest.TestCase):
             skill = Path(temp_dir) / "SKILL.md"
             skill.write_text("plugin contract", encoding="utf-8")
             self.assertEqual(PROBE.validate_probe(0, json.dumps(self.payload(skill)), skill), [])
+
+    def test_accepts_matching_installed_copy_and_additional_report_fields(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            canonical = Path(temp_dir) / "canonical.md"
+            installed = Path(temp_dir) / "installed" / "skills" / "shikigarasu" / "SKILL.md"
+            installed.parent.mkdir(parents=True)
+            canonical.write_text("plugin contract", encoding="utf-8")
+            installed.write_text("plugin contract", encoding="utf-8")
+            payload = self.payload(installed)
+            payload["skill_name"] = "shikigarasu:shikigarasu"
+            payload["protected_actions"].append("external actions")
+            payload["evidence_report_fields"].insert(0, "authorized outcome")
+            self.assertEqual(PROBE.validate_probe(0, json.dumps(payload), canonical), [])
+
+    def test_rejects_installed_copy_with_different_content(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            canonical = Path(temp_dir) / "canonical.md"
+            installed = Path(temp_dir) / "installed" / "skills" / "shikigarasu" / "SKILL.md"
+            installed.parent.mkdir(parents=True)
+            canonical.write_text("canonical contract", encoding="utf-8")
+            installed.write_text("different contract", encoding="utf-8")
+            failures = PROBE.validate_probe(0, json.dumps(self.payload(installed)), canonical)
+            self.assertIn("source hash", failures)
 
     def test_prompt_and_schema_do_not_embed_expected_answers(self):
         model_input = PROBE.PROMPT + json.dumps(PROBE.response_schema())
