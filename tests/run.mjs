@@ -12,6 +12,8 @@ const steps = [
   ['pwsh', ['-NoProfile', '-File', join(tests, 'check-codex-authority.ps1')]],
   ['python', ['-X', 'utf8', join(tests, 'test_agy_routing.py')]],
   ['python', ['-X', 'utf8', join(tests, 'test_probe_shikigarasu_contract.py')]],
+  ['python', ['-X', 'utf8', join(tests, 'test_closure_gate.py')]],
+  ['python', ['-X', 'utf8', join(tests, 'test_test_runner.py')]],
 ];
 
 let failed = 0;

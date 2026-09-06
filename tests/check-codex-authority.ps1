@@ -63,6 +63,13 @@ foreach ($phrase in $contractPhrases) {
     if (-not $skill.Contains($phrase)) { throw "Missing self-contained Codex contract phrase: $phrase" }
 }
 
+foreach ($phrase in @('references/spec-driven-closure.md', 'scripts/closure_gate.py', 'references/test-execution.md', 'scripts/test_runner.py', 'not a second completion authority', 'Missing results and environment failures')) {
+    if (-not $skill.Contains($phrase)) { throw "Missing spec-driven execution contract: $phrase" }
+}
+foreach ($relative in @('references/spec-driven-closure.md', 'scripts/closure_gate.py', 'references/test-execution.md', 'scripts/test_runner.py')) {
+    if (-not (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $skillPath) $relative) -PathType Leaf)) { throw "Missing workflow dependency: $relative" }
+}
+
 foreach ($forbidden in @('shikigarasu-common', 'dotcodex', 'personal AGENTS', 'C:\', '/Users/', '/home/')) {
     if ($skill.Contains($forbidden)) { throw "Codex skill has a forbidden dependency: $forbidden" }
 }

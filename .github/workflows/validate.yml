@@ -20,3 +20,5 @@ jobs:
       - run: pwsh -NoProfile -File tests/check-codex-authority.ps1
       - run: python -X utf8 tests/test_agy_routing.py
       - run: python -X utf8 tests/test_probe_shikigarasu_contract.py
+      - run: python -X utf8 tests/test_closure_gate.py
+      - run: python -X utf8 tests/test_test_runner.py

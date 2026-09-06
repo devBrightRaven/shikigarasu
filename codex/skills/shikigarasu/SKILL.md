@@ -27,6 +27,14 @@ Do not auto-trigger for one bounded task or a purely mechanical check. An explic
 
 Track each ticket as `READY`, `IN_PROGRESS`, `REVIEW_1`, `REVIEW_2`, `FIX`, `CLOSED`, or `BLOCKED`, plus producer, reviewers, attempts, findings, and evidence.
 
+## Spec-driven work and test execution
+
+For an authorized spec-driven implementation, read [references/spec-driven-closure.md](references/spec-driven-closure.md). Keep the approved spec authoritative and map its requirement IDs to tickets, behavioral TDD receipts, and integration evidence. OpenSpec task checkboxes are a projection of the execution queue, not a second completion authority. Workers must return material spec conflicts to the coordinator rather than changing requirements to make tests pass.
+
+Before closing a spec-driven ticket or integration, run `scripts/closure_gate.py` against its frozen contract and evidence. A `BLOCKED` result prevents closure; `CLOSABLE` only permits the coordinator to close after inspecting raw evidence and both independent reviews. The checker validates declared requirement receipts; the coordinator separately verifies ticket-to-requirement coverage, dependencies, and authoritative queue state. This is a coordinator protocol and evidence checker, not an unbypassable runtime or proof of evidence authenticity. Inventory must include relevant staged, unstaged, and untracked changes.
+
+For tests that may outlive a short tool call, read [references/test-execution.md](references/test-execution.md) and use `scripts/test_runner.py` to obtain a durable run handle before polling. Assign one execution owner; when child tools are unreliable, the coordinator runs tests while the producer edits. Never relaunch an uncertain run solely because a tool turn was interrupted. Missing results and environment failures are not behavioral RED or passing evidence.
+
 ## Dispatch natively
 
 - Use `spawn_agent` for producers and independent reviewers. Use functional task roles rather than persona names.
