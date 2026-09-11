@@ -86,21 +86,33 @@ class DurableTestRunnerTests(unittest.TestCase):
     def test_start_returns_before_delayed_child_finishes_and_status_polls_same_run(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            started_at = time.monotonic()
+            release = root / "release-child"
             started = RUNNER.start_run(
-                child_code("import time; time.sleep(1.0); print('later')"),
+                child_code(
+                    "import pathlib, time; "
+                    f"release = pathlib.Path({str(release)!r})\n"
+                    "while not release.exists(): time.sleep(0.02)\n"
+                    "print('later')"
+                ),
                 cwd=root,
                 evidence_root=root / "evidence",
-                timeout=3,
+                timeout=10,
             )
-            elapsed = time.monotonic() - started_at
-
-            self.assertLess(elapsed, 0.75)
-            self.assertEqual("started", started["status"])
-            first = RUNNER.status_run(Path(started["run_handle"]))
-            self.assertFalse(first["terminal"])
-            self.assertEqual("running", first["status"])
-            self.assertEqual("passed", wait_for_terminal(Path(started["run_handle"]))["status"])
+            handle = Path(started["run_handle"])
+            try:
+                # The child cannot finish until this caller releases it. This
+                # tests ordering, not machine-dependent Python startup speed.
+                self.assertEqual("started", started["status"])
+                first = RUNNER.status_run(handle)
+                self.assertFalse(first["terminal"])
+                self.assertEqual("running", first["status"])
+            finally:
+                # Drain the same run even when an assertion fails, before the
+                # temporary directory tries to remove its open log files.
+                release.touch()
+                result = wait_for_terminal(handle, timeout=15)
+            self.assertEqual("passed", result["status"])
+            self.assertEqual("later\n", (handle / "stdout.txt").read_text())
 
     def test_existing_run_directory_is_never_overwritten(self):
         with tempfile.TemporaryDirectory() as temp_dir:
