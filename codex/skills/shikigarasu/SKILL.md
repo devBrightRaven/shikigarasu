@@ -1,6 +1,6 @@
 ---
 name: shikigarasu
-description: 'Use when Shikigarasu is invoked; an authorized outcome has multiple substantive independent workstreams; the user requests agents, subagents, parallel work, delegation, or coordination; producer plus independent reviewer separation is needed; or the user asks to continue until done, perform repeated execution and verification, or run a persistent goal for an outcome that needs coordination. Do not auto-trigger for one bounded task or a purely mechanical check.'
+description: 'Coordinate parallel workstreams or independent reviews with native Codex agents. Skip simple single-task work.'
 ---
 
 # Shikigarasu for Codex
@@ -94,6 +94,7 @@ For tests that may outlive a short tool call, read [references/test-execution.md
 ## Dispatch natively
 
 - Use `spawn_agent` for producers and independent reviewers. Use functional task roles rather than persona names.
+- For every independent reviewer, call `spawn_agent` with `fork_turns="none"`; do not omit this argument or use `"all"`. Supply the review scope, acceptance criteria, applicable instructions, and artifact paths in the task message without producer conclusions or another reviewer's verdict.
 - Use `send_message` for context that belongs to active work and `followup_task` for a new turn by an existing agent.
 - Use `wait_agent` only while agents are working. Count the coordinator against the runtime's available collaboration capacity, fill only free slots, and refill them as agents finish.
 - Give each ticket the smallest sufficient context: its contract, acceptance criteria, applicable instructions, dependencies, and evidence destination.

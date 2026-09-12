@@ -47,8 +47,8 @@ $positiveTriggers = @(
 $negativeTriggers = @('one bounded task', 'purely mechanical check')
 $body = $skill.Substring($skill.IndexOf('# Shikigarasu'))
 foreach ($phrase in $positiveTriggers + $negativeTriggers) {
-    if (-not $frontmatter.Contains($phrase) -or -not $body.Contains($phrase)) {
-        throw "Trigger boundary must appear in frontmatter and body: $phrase"
+    if (-not $body.Contains($phrase)) {
+        throw "Detailed trigger boundary must remain in the body: $phrase"
     }
 }
 

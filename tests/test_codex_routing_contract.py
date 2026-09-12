@@ -44,6 +44,18 @@ class StaticCodexRoutingContractTests(unittest.TestCase):
             with self.subTest(forbidden=forbidden):
                 self.assertNotIn(forbidden.lower(), self.lower)
 
+    def test_description_keeps_core_routing_context(self):
+        description = re.search(r"^description: '(.+)'$", self.text, re.MULTILINE).group(1)
+        # Source-content check, not a claim about a host truncation threshold.
+        for trigger in ("parallel workstreams", "independent review", "simple single-task"):
+            with self.subTest(trigger=trigger):
+                self.assertIn(trigger, description.lower())
+
+    def test_independent_review_uses_explicit_fresh_fork(self):
+        dispatch = self.text.split("## Dispatch natively", 1)[1].split("## Gate closure", 1)[0]
+        self.assertIn('`fork_turns="none"`', dispatch)
+        self.assertIn("do not omit", dispatch.lower())
+
     def test_simple_bounded_work_stays_inline_even_when_contract_is_selected(self):
         for anchor in (
             "simple bounded outcome in the main session",
