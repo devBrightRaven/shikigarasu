@@ -36,7 +36,10 @@ codex plugin add shikigarasu@shikigarasu-codex
 After pulling an update, run the `codex plugin add` command again, then start a new thread so Codex discovers the refreshed skill. The Codex plugin does not require personal `AGENTS.md` changes or the Claude shared contract.
 <!-- CODEX_INSTALL_END -->
 
-While enabled, the plugin supplies namespaced agents, commands, and rules. The copying steps below are optional and create unnamespaced personal entrypoints.
+While enabled, the plugin supplies the namespaced agents and commands. The
+portable dispatch rule is a separate host rule: copying it into the host rules
+directory is optional, and its actual loading must be verified in the Claude
+session. The copying steps below create unnamespaced personal entrypoints.
 
 ### 1. Plugin (slash commands)
 
@@ -67,9 +70,15 @@ mkdir -p ~/.claude/rules/common
 cp rules/common/shikigarasu-dispatch.md ~/.claude/rules/common/
 ```
 
-This instructs the main Claude session to route multi-axis work directly to Kishi and single-axis work to the matching worker, without an extra suggestion/confirmation round.
+When the host has loaded the rule, it instructs the main Claude session to
+route multi-axis work directly to the coordinator and single-axis work to the
+matching available worker, without an extra suggestion/confirmation round.
+The plugin manifest alone does not prove that this root `rules/` file is
+loaded; verify the rule in the target Claude session.
 
-**Lifecycle note**: Disabling the plugin removes its namespaced components; copied personal agents remain independently, as does any copied dispatch rule. Remove those personal copies manually when no longer wanted.
+**Lifecycle note**: Disabling the plugin removes its namespaced components;
+copied personal agents remain independently, as does any copied dispatch rule.
+Remove those personal copies manually when no longer wanted.
 
 ---
 
@@ -170,20 +179,23 @@ Or via user agent: "use the seiran agent to frame this decision." Soen is availa
 
 **Skip shikigarasu entirely**
 
-Say "just do it" / "直接做" / "skip shikigarasu" to bypass axis routing for the current task.
+Say "skip shikigarasu", "inline", "不要分工", or explicitly ask the main
+session not to dispatch workers to bypass axis routing for the current task.
+Ordinary "just do it" / "直接做" still routes when a bounded axis owns the
+requested outcome.
 
 ---
 
 ## Design notes
 
-- **Shared contract**: REQUIRED SUB-SKILL `shikigarasu-common` (shared portable contract; Claude runtime path `~/.claude/skills/shikigarasu-common/`) supplies the queue, independent-review, convergence, and evidence contract. This plugin owns only Claude-native coordination: Agent / SendMessage / Task* tooling, model routing, commands, and dispatch rules.
+- **Shared contract**: REQUIRED SUB-SKILL `shikigarasu-common` (shared portable contract; Claude runtime path `~/.claude/skills/shikigarasu-common/`) supplies the queue, independent-review, convergence, and evidence contract. This plugin owns only Claude-native coordination: Agent / SendMessage / Task* tooling, model routing, commands, and the portable dispatch-rule source; host loading of that rule is separate and must be verified.
 - **Thin framing**: Empirical testing (n=32, 2026-04-24) showed thick mythology / archetype priming had no measurable effect on Opus 4.7 or GPT-5.4 output quality on execution or strategic tasks. Axes use minimal framing — tool whitelist + output structure + handoff protocol.
 - **Memory split**: Identity (Stance + Cautions) loads every invocation. Observations are a separate file, Grep'd only when relevant. This prevents unbounded context growth as observation logs accumulate.
 - **Kishi as coordinator**: Kishi dispatches workers via the Agent tool. It cannot edit files, run commands, or browse the web — it only reads context and routes. This keeps the coordination layer free of side effects.
 - **Batch handoff**: Kishi sequences worker handoffs automatically inside the requested local outcome. It interrupts only for irreversible external action, new authority, material scope expansion, or an outcome-changing fork.
 - **Queue and review gates**: Kishi refills available worker slots from its ready queue and requires two fresh-context independent review passes before closing each ticket. Producer evidence cannot close its own ticket.
 - **Persistence boundary**: Kishi owns convergence for the current turn only. Cross-turn continuation happens only when a `/goal` is confirmed active in the session or the user explicitly requests persistent continuation; never infer an equivalent mechanism or create persistence on Kishi's own initiative. Without that confirmation, finish the turn and stop.
-- **Plugin lifecycle**: The enabled plugin supplies namespaced agents, commands, and rules. Optional copied personal agents and rules remain after the plugin is disabled.
+- **Plugin lifecycle**: The enabled plugin supplies namespaced agents and commands. The dispatch rule is a separately loaded host rule; optional copied personal agents and rules remain after the plugin is disabled.
 
 ---
 

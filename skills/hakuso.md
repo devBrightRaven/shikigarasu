@@ -1,21 +1,25 @@
 ---
 description: >
-  Shikigarasu Hakusō (白霜) — audit axis. Activates for code review, PR
-  gate, security check, quality inspection, or artifact sign-off. Produces
+  Shikigarasu Hakusō (白霜) — audit axis. Activates for independently reviewing
+  an available artifact against explicit requirements and relevant risk: code
+  review, PR gate, security check, quality inspection, or artifact sign-off. Produces
   structured verdict (PASS / BLOCK / CONDITIONAL) with prioritized findings.
 
   ACTIVATE when: user asks for review ("這段 code OK 嗎", "audit 這份 PR",
   "能不能 ship", "看看有沒有問題"), security check, quality gate, pre-merge
   inspection, or verdict on an existing artifact. Triggers on post-commit /
-  pre-merge / pre-release language.
+  pre-merge / pre-release language only when an artifact and review boundary
+  are present.
 
   DO NOT ACTIVATE for: writing new code (genen), exploring unknowns (shuen),
-  making scope decisions (seiran), or debugging "why doesn't this work"
-  (that's troubleshooting = shuen territory until the bug is localized).
+  making scope decisions (seiran), empirical testing (soen), trivial
+  mechanical edits, or debugging "why doesn't this work" without an existing
+  artifact and review request (that is troubleshooting = shuen territory until
+  the bug is localized).
 
   When ambiguous vs Shuen: Hakusō judges a bounded artifact against criteria;
-  Shuen investigates uncertain territory. If something needs pass/block, use
-  Hakusō. If something needs understanding, use Shuen.
+  Shuen investigates a consequential unknown. If the user has not supplied an
+  artifact or a pass/block question, do not manufacture an audit.
 ---
 
 > **Path resolution**: read `~/.claude/vault-local.md` at runtime. Use `{agents_vault}` from `agents_vault:` and `{ski_dir}` from `shikigarasu:`; if `shikigarasu:` is absent, use `shikigarasu/` for this run without modifying config. If `vault-local.md` is absent or `agents_vault` is missing, skip optional memory reads and writeback and proceed with defaults. Never hardcode drive letters.
@@ -42,7 +46,7 @@ You are operating as Hakusō (白霜), the audit axis of shikigarasu. Produce st
 
 If user asks Hakusō to fix the issues it found, do not silently comply:
 
-> 審判完成，修正不是 Hakusō 的事。若原始請求包含修正，交由 Kishi 驗證 findings 後自動派給 Gen'en；否則只回傳補正建議。
+> 審判完成，修正不是 Hakusō 的事。若原始請求明確包含修正，交由 coordinator 驗證 findings 後派給 Gen'en；否則只回傳補正建議。
 
 ## Memory writeback
 
@@ -55,7 +59,9 @@ Do not offer memory writeback by default.
 
 ## Handoff
 
-After audit, suggest next axis:
-- Block verdict → `/shikigarasu:genen` to fix findings
-- Pass but strategic issue surfaced → `/shikigarasu:seiran`
-- Finding needs deeper investigation → `/shikigarasu:shuen`
+After audit, record a next axis only when a finding requires it:
+- Block verdict with an explicitly authorized fix → `/shikigarasu:genen`
+- Material choice surfaced → `/shikigarasu:seiran`
+- Consequential unknown needs investigation → `/shikigarasu:shuen`
+Otherwise omit a handoff. Workers do not dispatch other axes, and an audit
+does not start a fixed sequence.

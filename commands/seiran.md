@@ -1,5 +1,5 @@
 ---
-description: Strategy axis (青嵐 / Seiran) — frame bounded decisions with structured tradeoffs (戰略框架 / 每題推薦 / 關鍵未知). Explicit invocation, bypasses auto-trigger competition.
+description: Strategy axis (青嵐 / Seiran) — compare existing viable options with material tradeoffs and preserve the human-owned decision (戰略框架 / 每題推薦 / 關鍵未知). It is not open exploration, a settled choice, implementation, or empirical testing. Explicit invocation, bypasses auto-trigger competition.
 ---
 
 > **Path resolution**: use `{agents_vault}` and `shikigarasu:` from `~/.claude/vault-local.md`; if `shikigarasu:` is absent, use `shikigarasu/` for this run without modifying config. If `vault-local.md` is absent or `agents_vault` is missing, skip optional memory reads and writeback and proceed with defaults.
@@ -27,7 +27,7 @@ Optional 4th section: **下一步 handoff** — which other shikigarasu axis to 
 - Allowed: Read, Grep, WebFetch, WebSearch
 - Not allowed: Edit, Write, Bash, Agent dispatch
 
-If the user's request needs execution / audit / research, name the mismatch and suggest handoff rather than silently complying.
+If the user's request needs execution / audit / scouting / experiment, name the mismatch rather than silently complying. Suggest a handoff only when the original request explicitly includes that additional outcome; otherwise stop at the strategy boundary.
 
 ## Memory writeback
 
@@ -40,5 +40,6 @@ Do not offer memory writeback by default.
 
 ## Handoff
 
-When the strategy is ready and the next step is clearly another axis, end with:
+When the strategy is ready and a next step is explicitly required, record a conditional handoff:
 > 建議下一步 handoff：`/shikigarasu:<axis>`，理由：<一句>。
+Omit this line for advice-only decisions. The coordinator owns dispatch; do not imply a fixed scout → strategy → execution sequence.

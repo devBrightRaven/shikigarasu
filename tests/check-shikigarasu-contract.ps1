@@ -70,7 +70,8 @@ if ($DispatchPath) {
     $dispatchCases = [ordered]@{
         'dispatch is self-contained and capacity-aware' = @('currently available subagent slots', 'Refill freed slots', 'no fixed cap', 'without blocking authorized work', 'do not stack Kishi flows')
         'dispatch preserves persistence and external boundaries' = @('/goal', 'irreversible external action', 'when available', 'report the unsupported persistence requirement')
-        'dispatch uses one capable coordinator' = @('main session applies the Kishi coordinator protocol directly', 'exactly one `claude --agent kishi -p', 'Never start one CLI process per ticket')
+        'dispatch uses one capable coordinator' = @('main session applies the Kishi coordinator protocol directly', 'exactly one `claude --agent kishi -p', 'Never start one CLI process per ticket', 'Detached only when explicitly requested', 'does not invoke Kishi as a nested')
+        'dispatch is outcome-shaped and Soen is evidence-gated' = @('outcome-shaped', 'multiple substantive roles', 'does not by itself require a subagent or the coordinator', 'routes to genen even when it looks small', 'explicit user override, not an inferred', 'explicitly inline', 'no fixed six-axis sequence', 'Domain curiosity or document-only analysis alone does not trigger Soen', 'pass/fail', 'time/resource limits', 'stop condition')
     }
     foreach ($case in $dispatchCases.GetEnumerator()) {
         $missing = @($case.Value | Where-Object { -not $dispatch.Contains($_) })
@@ -92,7 +93,7 @@ if ($ReadmePath) {
         'orchestrated example shows two distinct final reviewers' = @('Hakuso reviewer 1', 'Hakuso reviewer 2', 'after the final change')
         'Soen is Agent-only' = @('Soen is Agent-only', 'no `/shikigarasu:soen` slash command')
         'documented agent models match frontmatter' = @('| `kishi` | 鬼子 | Coordinator — dispatches workers, synthesizes | sonnet |', '| `seiran` | 青嵐 | Strategy — bounded tradeoff analysis | opus |', '| `shuen` | 朱焔 | Scout — blind spots, assumption stress-test | sonnet |', '| `genen` | 玄淵 | Execution — build, refactor, fix | sonnet |', '| `hakuso` | 白霜 | Audit — pass/block verdict | opus |', '| `soen` | 蒼炎 | Scientist — hypothesis-driven experiments | sonnet |')
-        'plugin lifecycle distinguishes namespaced and copied entrypoints' = @('namespaced agents, commands, and rules', 'unnamespaced personal agent entrypoints', 'Disabling the plugin removes its namespaced components', 'copied personal agents remain')
+        'plugin lifecycle distinguishes namespaced and copied entrypoints' = @('namespaced agents and commands', 'portable dispatch rule is a separate host rule', 'unnamespaced personal agent entrypoints', 'Disabling the plugin removes its namespaced components', 'copied personal agents remain')
     }
     foreach ($case in $readmeCases.GetEnumerator()) {
         $missing = @($case.Value | Where-Object { -not $readme.Contains($_) })
@@ -106,6 +107,7 @@ if ($ReadmePath) {
         }
     }
     if ($readme.Contains('plugin provides slash commands only') -or $readme.Contains('does not remove agents or rules')) { Write-Output 'FAIL: stale slash-commands-only lifecycle claim'; $failed++ } else { Write-Output 'PASS: no stale slash-commands-only lifecycle claim' }
+    if ($readme.Contains('plugin supplies namespaced agents, commands, and rules')) { Write-Output 'FAIL: README still claims plugin auto-supplies root rules'; $failed++ } else { Write-Output 'PASS: README does not claim root rules are auto-supplied' }
 }
 
 if ($AgentReadmePath) {
@@ -144,9 +146,10 @@ if ($AgentDirPath) {
 
 if ($KishiPath) {
     $kishi = Get-Content -Raw $KishiPath
-    $required = @('Coordinate; do not execute', 'If `Agent` is unavailable', 'Mis-invoked without Agent dispatch capability.', 'Then stop.', 'Require a second review pass when the first reported findings', 'the producer and its reviewers must be different agents', 'Refill freed slots', 'collective ticket ceiling')
+    $required = @('Coordinate; do not execute', 'authorized outcome', 'multiple substantive roles', 'magic keyword', 'six-axis procession', 'explicitly asks to', 'If `Agent` is unavailable', 'Mis-invoked without Agent dispatch capability.', 'Then stop.', 'shikigarasu-common', 'two independent review passes for every completed ticket', 'The producer and its reviewers must be different agents', 'Refill freed slots', 'collective ticket ceiling', 'Gate 0 authorization', 'raw evidence', 'human-owned material choice', 'New cost')
     $missing = @($required | Where-Object { -not $kishi.Contains($_) })
     if ($kishi -match 'description:[^\r\n]*Agent\(subagent_type=kishi\)') { $missing += 'Kishi description must not advertise nested invocation' }
+    if ($kishi.Contains('a clean first pass on low-risk local work closes')) { $missing += 'clean first pass must not close a ticket' }
     if ($missing.Count) {
         Write-Output 'FAIL: actual Kishi has coordinator capability and closure gates'
         $missing | ForEach-Object { Write-Output "  missing: $_" }
@@ -174,8 +177,11 @@ if ($HakusoPath) {
 
 if ($SoenPath) {
     $soen = Get-Content -Raw $SoenPath
-    $required = @('If either `vault` or `research` is absent or unresolved', 'fall back to OS temp', 'Never construct a partial vault path')
+    $required = @('authorized outcome needs empirical evidence', 'plain factual lookup', 'generic domain curiosity', 'document-only analysis', 'user need not', 'Once the setup and limits are already authorized and verified', 'Pass/fail criteria', 'Time/resource bound', 'Stop condition', 'production data without explicit authorization', 'Gate 0 authorization', 'open-ended exploration', 'Never delete raw research evidence automatically', 'raw evidence is retained', 'If either `vault` or `research` is absent or unresolved', 'fall back to OS temp', 'Never construct a partial vault path')
     $missing = @($required | Where-Object { -not $soen.Contains($_) })
+    if ($soen -match 'description:[^\r\n]*Triggers on') { $missing += 'Soen must not be keyword-triggered' }
+    if ($soen.Contains('Document every experiment in 實驗設計 as a **Proof of Life (PoL) probe**')) { $missing += 'PoL must be conditional on an artifact/prototype' }
+    if ($soen.Contains('dispose all fit the declared timeline')) { $missing += 'prototype disposal must not delete raw evidence' }
     if ($missing.Count) { Write-Output 'FAIL: Soen complete vault-path fallback'; $missing | ForEach-Object { Write-Output "  missing: $_" }; $failed++ } else { Write-Output 'PASS: Soen complete vault-path fallback' }
 }
 
@@ -227,10 +233,10 @@ if ($ReadmePath -and $KishiPath -and (Test-Path $ReadmePath) -and (Test-Path $Ki
     $persistencePhrase = 'explicitly requests persistent continuation'
     if (($readmeText -notmatch $goalRegex) -and ($kishiText -notmatch $goalRegex) -and $readmeText.Contains($persistencePhrase) -and $kishiText.Contains($persistencePhrase)) { Write-Output 'PASS: README and kishi.md persistence boundary tightened' } else { Write-Output 'FAIL: README and kishi.md persistence boundary tightened'; $failed++ }
 
-    if ($kishiText.Contains('the producer and its reviewers must be different agents')) { Write-Output 'PASS: producer excluded from serving as either reviewer' } else { Write-Output 'FAIL: producer excluded from serving as either reviewer'; $failed++ }
+    if ($kishiText.Contains('The producer and its reviewers must be different agents')) { Write-Output 'PASS: producer excluded from serving as either reviewer' } else { Write-Output 'FAIL: producer excluded from serving as either reviewer'; $failed++ }
 
-    $anchorsHeld = $kishiText.Contains('Require a second review pass when the first reported findings') -and $kishiText.Contains('A failed ticket may reopen only as a strictly narrower ticket.')
-    if ($anchorsHeld) { Write-Output 'PASS: scoped second-pass rule and reopen-narrower sentences present' } else { Write-Output 'FAIL: scoped second-pass rule and reopen-narrower sentences present'; $failed++ }
+    $anchorsHeld = $kishiText.Contains('two independent review passes for every completed ticket') -and $kishiText.Contains('including when the first pass is clean') -and $kishiText.Contains('A failed ticket may reopen only as a strictly narrower ticket.')
+    if ($anchorsHeld) { Write-Output 'PASS: canonical dual-review rule and reopen-narrower sentences present' } else { Write-Output 'FAIL: canonical dual-review rule and reopen-narrower sentences present'; $failed++ }
 }
 
 if ($DispatchPath -and (Test-Path $DispatchPath)) {

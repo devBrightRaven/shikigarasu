@@ -11,6 +11,7 @@ const steps = [
   ['pwsh', ['-NoProfile', '-File', join(tests, 'check-shikigarasu-contract.ps1')]],
   ['pwsh', ['-NoProfile', '-File', join(tests, 'check-codex-authority.ps1')]],
   ['python', ['-X', 'utf8', join(tests, 'test_agy_routing.py')]],
+  ['python', ['-X', 'utf8', join(tests, 'test_axis_routing_contract.py')]],
   ['python', ['-X', 'utf8', join(tests, 'test_codex_routing_contract.py')]],
   ['python', ['-X', 'utf8', join(tests, 'test_probe_shikigarasu_contract.py')]],
   ['python', ['-X', 'utf8', join(tests, 'test_closure_gate.py')]],

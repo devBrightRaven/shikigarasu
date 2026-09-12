@@ -1,13 +1,36 @@
 # Shikigarasu Axis Dispatch
 
-**Guard**: active only if kishi is installed (`~/.claude/agents/kishi.md`
-exists or kishi appears in the session's agent list). Otherwise treat this
-whole file as inactive.
+**Availability guard**: evaluate each request independently. Kishi is not a
+global precondition for routing. A matching single axis may be dispatched when
+that axis is available even if Kishi is absent. Kishi (or the interactive main
+session applying the coordinator protocol) is needed only when the requested
+outcome genuinely spans multiple axes.
 
-Matching tasks route directly with no suggestion round-trip. Kishi completes
-the authorized local, reversible batch and interrupts only for irreversible external action,
-new authority, material scope expansion, or an
-outcome-changing fork. `[plan only]` remains an explicit preview mode.
+Before dispatching, verify that the selected axis is available in the current
+session or through an enabled namespaced command/agent surface. If it is not
+available, disclose the unavailable capability and do not simulate a call,
+silently substitute another axis, or claim that the work ran. If no suitable
+axis is available, the main session may answer within its own authority or
+state the concrete block. An absent Kishi must not disable an available single axis.
+
+Match the user's intent and requested authority, not an isolated keyword.
+Naming a role, mentioning Shikigarasu, or asking to continue until the work
+is done does not by itself require a subagent or the coordinator; the shape
+of the requested outcome decides. The main session keeps only work that
+states no acceptance criterion and finishes in a handful of tool calls. An
+explicitly authorized goal with a stated observable acceptance criterion
+(tests, lint, build) routes to genen even when it looks small; a general
+inline exemption in personal rules does not override that row. Route a
+direct single-axis task with no suggestion round-trip. Automatic
+coordinator selection is outcome-shaped: when an authorized outcome genuinely
+needs multiple substantive roles, dependency handoffs, or meaningful fan-out,
+use the coordinator even if the user never names Kishi. Skip it for one-axis,
+trivial, or explicitly inline work. The interactive main session applies the
+Kishi protocol with its Agent tool; it does not invoke Kishi as a nested
+coordinator. Kishi completes the authorized local, reversible batch and
+interrupts only for irreversible external action, new authority, material
+scope expansion, or an outcome-changing fork. `[plan only]` remains an explicit
+preview mode.
 
 Authority precedence remains: current user instructions, applicable repository
 instructions, current verified files/state, then memory. This dispatch rule
@@ -22,20 +45,47 @@ confirmation, finish the turn and stop.
 
 | Intent in user prompt | Route (dispatch directly) |
 |---|---|
-| Bounded decision with options (scope, positioning, roadmap, priorities) | seiran 策略 |
-| Implement / refactor / fix / "make it work" | genen 執行 |
-| Code review, audit, PR gate, security check | hakuso 審判 |
-| Research, blind-spot scan, debugging recon, "why is this weird" | shuen 探路 |
-| Hypothesis-driven experiment, benchmark, "what happens if" | soen 蒼炎 (Agent tool; no slash command by design) |
-| Needs ≥2 axes (review→fix→verify, research→build, ...) | kishi orchestrates |
+| Concrete consequential unknown or blind spot that could change the outcome | shuen 探路 |
+| Existing viable options with material tradeoffs that need a human-owned choice | seiran 策略 |
+| Explicitly authorized selected bounded goal with observable acceptance criteria | genen 執行 |
+| Existing artifact plus a request for independent review against requirements/risk | hakuso 審判 |
+| Empirical answer, benchmark, or hypothesis test is required | soen 蒼炎 (Agent tool; no slash command by design) |
+| Authorized outcome genuinely needs ≥2 substantive axes, dependency handoffs, or meaningful fan-out (for example review→fix→verify or scout→build) | coordinator orchestrates |
 
-Single known axis → that worker directly through the Agent tool, or a slash command when available;
-do not wrap one-axis jobs in kishi.
+Single known available axis → that worker directly through the Agent tool, or a
+slash command when available; do not wrap one-axis jobs in kishi. If the user
+explicitly names an axis, honor it when available; otherwise disclose the
+unavailable selected axis instead of fabricating a call.
+
+Boundary rules:
+
+- A plain factual lookup does not become Shuen merely because it says
+  “research”. Route to Soen when the requested outcome needs empirical
+  evidence from a test or benchmark within the authorized scope; the user need
+  not use the word “benchmark”.
+- Domain curiosity or document-only analysis alone does not trigger Soen. Soen
+  may infer a narrow falsifiable question and run a minimal safe measurement
+  when empirical evidence is required, but must predeclare method, pass/fail,
+  time/resource limits, and a stop condition.
+- Seiran requires existing viable choices and a material tradeoff; do not add a
+  strategy stage to a settled choice.
+- Genen requires implementation authority; a diagnosis-only question does not
+  authorize a fix.
+- Hakuso requires an available artifact and a review boundary; do not audit
+  every trivial mechanical edit.
+- An outcome with multiple substantive dependencies may use the coordinator,
+  but there is no fixed six-axis sequence and no keyword/persona requirement.
+  Workers do not spawn or dispatch other axes; boundary handoff stays with the
+  coordinator.
+- Preserve the applicable worker gates and evidence records. In particular, a
+  security probe must retain its red-team authorization gate and raw evidence;
+  the coordinator does not implement production changes or make a human-owned
+  strategy choice.
 
 kishi invocation by weight:
 
 - **Light/medium, interactive**: the current main session applies the Kishi coordinator protocol directly using its Agent tool. Do not invoke Kishi as a nested agent.
-- **Heavy/detached**: start exactly one `claude --agent kishi -p "<task>"` parent coordinator. Append ` [plan only]` to preview routing without dispatching. Never start one CLI process per ticket; the parent uses native Agent coordination.
+- **Detached only when explicitly requested**: start exactly one `claude --agent kishi -p "<task>"` parent coordinator. Do not escalate an interactive task to detached mode merely because it is heavy. Append ` [plan only]` to preview routing without dispatching. Never start one CLI process per ticket; the parent uses native Agent coordination.
 
 For multi-axis tasks, pass the full requested outcome to Kishi once. Do not
 return to the user between scout, strategy, execution, and audit phases unless
@@ -44,7 +94,10 @@ the interruption policy above applies.
 ## Still skipped (relevance filter, not a confirmation gate)
 
 - Casual chat, factual lookup, one-liner, or clearly outside all axes
-- User said "直接做" / "skip shikigarasu" — handle inline/generic instead
+- User explicitly said "skip shikigarasu", "inline", "不要分工", or otherwise
+  directed the main session not to dispatch workers — handle inline/generic
+  instead. Ordinary "直接做" / "just do it" still routes when a bounded axis
+  owns the requested outcome.
 - `brightraven-resolve:resolve` already triggered — defer to resolve
 - Use capacity-aware waves bounded by currently available subagent slots.
   Refill freed slots immediately; do not launch hundreds of workers at once or
@@ -52,9 +105,9 @@ the interruption policy above applies.
   tickets: notify unusually large queues and their expected batching without blocking authorized work.
   In short, do not stack Kishi flows.
 
-`?ki` anywhere in the message now forces axis routing even inside the skip
-zone: state the chosen axis + the matching fragment in one line, then
-dispatch — no confirmation wait.
+`?ki` anywhere in the message is an explicit user override, not an inferred
+keyword: it forces axis routing even inside the skip zone. State the chosen
+axis + the matching fragment in one line, then dispatch — no confirmation wait.
 
 Async / monitoring / scheduled requests are not an axis job. Route to the
 user's OpenClaw daemon or schedule/loop skills when available; otherwise report the unsupported persistence requirement

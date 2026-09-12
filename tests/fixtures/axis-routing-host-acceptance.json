@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "kind": "native-host-routing-acceptance",
+  "purpose": "Behavioral acceptance cases for a real Claude host. This fixture is not a router; static tests must not claim that these outcomes occurred.",
+  "source_acceptance_scope": "static-only",
+  "executable_in_this_repo": false,
+  "host_preconditions": [
+    "The native host must explicitly load rules/common/shikigarasu-dispatch.md or an authorized copied rule; this source fixture does not assert that a plugin manifest auto-loads root rules.",
+    "Use a disposable session and report unavailable agents instead of substituting a simulated call."
+  ],
+  "verification": {
+    "runner": "Run each input through the native Claude host with the listed availability, capture actual Agent/tool calls and availability disclosures, then compare with expected_observable_calls.",
+    "not_proven_by": [
+      "keyword matching",
+      "regular-expression checks",
+      "reading the expected answer from this fixture"
+    ]
+  },
+  "inputs": [
+    {
+      "id": "shuen-positive-consequential-unknown",
+      "role_under_test": "shuen",
+      "kind": "positive",
+      "prompt": "Before we choose a data-retention vendor, identify the concrete unknowns and blind spots that could make the compliance decision wrong. Surface evidence and checks; do not change code.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "shuen-negative-plain-lookup",
+      "role_under_test": "shuen",
+      "kind": "negative",
+      "prompt": "What does HTTP status 404 mean? Give me the standard definition in one paragraph.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "shuen-negative-empirical-test",
+      "role_under_test": "shuen",
+      "kind": "negative",
+      "prompt": "Run a benchmark to determine whether the new cache improves p95 latency; report the measured result.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "seiran-positive-viable-options",
+      "role_under_test": "seiran",
+      "kind": "positive",
+      "prompt": "We have two viable options: PostgreSQL full-text search or a hosted search service. Compare their cost, latency, portability, and rollback tradeoffs, then recommend one; do not implement either option.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "seiran-negative-settled-choice",
+      "role_under_test": "seiran",
+      "kind": "negative",
+      "prompt": "Option B is already selected. Implement the bounded migration to B and verify these acceptance criteria: the migration is reversible and the existing tests pass.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "genen-positive-authorized-goal",
+      "role_under_test": "genen",
+      "kind": "positive",
+      "prompt": "Implement the selected bounded goal: add a retry limit of three to the webhook client. Update tests, keep the public API unchanged, and stop when the tests pass.",
+      "host_setup": {
+        "required": true,
+        "status": "host-provided",
+        "precondition": "Attach a disposable repository fixture containing the webhook client, its tests, and a clean working tree.",
+        "artifact": {
+          "kind": "disposable-repo",
+          "files": ["webhook_client.py", "test_webhook_client.py"],
+          "acceptance": ["retry limit is three", "public API is unchanged", "tests pass"]
+        }
+      },
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "genen-negative-diagnosis-only",
+      "role_under_test": "genen",
+      "kind": "negative",
+      "prompt": "The webhook test fails intermittently. Diagnose the likely cause and list evidence to collect; do not edit files or propose an implementation.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "hakuso-positive-artifact-review",
+      "role_under_test": "hakuso",
+      "kind": "positive",
+      "prompt": "Review the attached migration diff against the rollback and data-loss requirements. Issue a pass/block verdict with severity-ranked findings; do not modify it.",
+      "host_setup": {
+        "required": true,
+        "status": "host-provided",
+        "precondition": "Attach a disposable migration diff plus its rollback and data-loss requirements; do not use a production repository.",
+        "artifact": {
+          "kind": "disposable-diff",
+          "files": ["migration.diff", "rollback.md", "requirements.md"],
+          "requirements": ["rollback is documented", "data loss is absent"]
+        }
+      },
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "hakuso-negative-trivial-edit",
+      "role_under_test": "hakuso",
+      "kind": "negative",
+      "prompt": "Inline this trivial local fixture edit without delegation: in disposable snippet.txt, replace the literal foo token with bar and return the changed text only. Do not call an agent or request review.",
+      "host_setup": {
+        "required": true,
+        "status": "host-provided",
+        "precondition": "Provide one disposable snippet.txt fixture with the literal foo token; handle the requested replacement inline with no agent or review call.",
+        "artifact": {
+          "kind": "disposable-text-file",
+          "path": "snippet.txt",
+          "contents": "foo\n"
+        }
+      },
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "kishi-positive-multi-axis-no-keyword",
+      "role_under_test": "kishi",
+      "kind": "positive",
+      "prompt": "Handle this authorized outcome end to end: first inspect the retention constraints, then measure two disposable providers and compare the material tradeoffs. Stop for my provider selection before any implementation; report evidence and do not choose or change production.",
+      "host_mode": "interactive_main",
+      "host_setup": {
+        "required": true,
+        "status": "host-provided",
+        "precondition": "Attach disposable retention notes and local provider fixtures; the native host must expose Agent, the listed workers, and no production credentials.",
+        "human_checkpoint": "The interactive main session remains the coordinator; it must pause for the user's provider selection before any Genen dispatch and must not invoke Kishi as a nested coordinator.",
+        "artifact": {
+          "kind": "disposable-routing-fixture",
+          "files": ["retention-notes.md", "provider_a_fixture.json", "provider_b_fixture.json"],
+          "acceptance": ["dependency-driven worker calls", "no fixed six-axis procession", "human choice remains pending"]
+        }
+      },
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen", "kishi"],
+      "kishi_available": true
+    },
+    {
+      "id": "kishi-negative-single-axis-inline",
+      "role_under_test": "kishi",
+      "kind": "negative",
+      "prompt": "Inline this one-file wording fix without delegation: replace the literal old label with new label in disposable snippet.txt and return the changed text only.",
+      "host_setup": {
+        "required": true,
+        "status": "host-provided",
+        "precondition": "Provide one disposable snippet.txt fixture with the literal old label; no worker or coordinator call is expected.",
+        "artifact": {
+          "kind": "disposable-text-file",
+          "path": "snippet.txt",
+          "contents": "old label\n"
+        }
+      },
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen", "kishi"],
+      "kishi_available": true
+    },
+    {
+      "id": "soen-positive-empirical-without-keyword",
+      "role_under_test": "soen",
+      "kind": "positive",
+      "prompt": "Using the attached disposable parser fixture, measure p95 latency for 30 local runs and report the observed value and whether it stays below 100 ms. Keep the fixture read-only; do not use production data or paid services.",
+      "host_setup": {
+        "required": true,
+        "status": "host-provided",
+        "precondition": "Attach a disposable local parser fixture and a runner that can perform at most 30 read-only runs; no production data, credentials, or paid service is available.",
+        "human_checkpoint": "Host preflight must verify the disposable fixture and the declared 100 ms pass/fail threshold; stop and disclose a boundary if setup is missing or the threshold would change. No additional user confirmation is required for this read-only run.",
+        "artifact": {
+          "kind": "disposable-measurement-fixture",
+          "files": ["parser_fixture.py", "measure_p95.py"],
+          "acceptance": ["p95 is recorded", "100 ms threshold is applied", "raw output and uncertainty are retained"]
+        }
+      },
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "soen-negative-domain-curiosity",
+      "role_under_test": "soen",
+      "kind": "negative",
+      "prompt": "Explain why cache eviction can increase tail latency from the attached design note; summarize the document only and do not run commands or collect measurements.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    },
+    {
+      "id": "cross-explicit-investigate-test-decide-build",
+      "role_under_test": "cross-axis",
+      "kind": "cross",
+      "prompt": "First investigate the unknown retention constraints, then empirically test the two viable providers and compare the material tradeoffs. Stop at a recommendation and measurable threshold; I will select the provider after reviewing the evidence. Do not choose or implement a provider.",
+      "host_setup": {
+        "required": true,
+        "status": "host-provided",
+        "precondition": "Provide disposable sources/data and an isolated implementation fixture; any experiment must avoid real provider writes.",
+        "stub_outputs": {
+          "shuen": {
+            "unknowns": ["retention_days", "regional_storage"],
+            "report_status": "complete"
+          },
+          "soen": {
+            "measurements": {"provider_a_p95_ms": 120, "provider_b_p95_ms": 90},
+            "threshold": "p95 < 100ms"
+          },
+          "seiran": {
+            "comparison": ["provider_a: lower migration cost", "provider_b: meets p95 threshold"],
+            "decision_owner": "user",
+            "selected_provider": null
+          }
+        }
+      },
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen", "kishi"],
+      "kishi_available": true
+    },
+    {
+      "id": "single-axis-without-kishi",
+      "role_under_test": "seiran",
+      "kind": "availability",
+      "prompt": "Compare the two existing deployment options on rollback risk and monthly cost; I will make the final choice.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": false
+    },
+    {
+      "id": "unavailable-selected-soen",
+      "role_under_test": "soen",
+      "kind": "availability",
+      "prompt": "Run an experiment to measure whether batching reduces queue latency, using p95 as the acceptance threshold.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso"],
+      "kishi_available": false
+    },
+    {
+      "id": "trivial-no-agent",
+      "role_under_test": "none",
+      "kind": "control",
+      "prompt": "Rewrite this error message in one shorter sentence; no file or tool action is needed.",
+      "available_axes": ["shuen", "seiran", "genen", "hakuso", "soen"],
+      "kishi_available": true
+    }
+  ],
+  "expected_observable_calls": {
+    "shuen-positive-consequential-unknown": {
+      "dispatch": ["shuen"],
+      "disclose_unavailable": []
+    },
+    "shuen-negative-plain-lookup": {
+      "dispatch": [],
+      "disclose_unavailable": []
+    },
+    "shuen-negative-empirical-test": {
+      "dispatch": ["soen"],
+      "disclose_unavailable": []
+    },
+    "seiran-positive-viable-options": {
+      "dispatch": ["seiran"],
+      "disclose_unavailable": []
+    },
+    "seiran-negative-settled-choice": {
+      "dispatch": ["genen"],
+      "disclose_unavailable": []
+    },
+    "genen-positive-authorized-goal": {
+      "dispatch": ["genen"],
+      "disclose_unavailable": []
+    },
+    "genen-negative-diagnosis-only": {
+      "dispatch": ["shuen"],
+      "disclose_unavailable": []
+    },
+    "hakuso-positive-artifact-review": {
+      "dispatch": ["hakuso"],
+      "disclose_unavailable": []
+    },
+    "hakuso-negative-trivial-edit": {
+      "dispatch": [],
+      "disclose_unavailable": []
+    },
+    "kishi-positive-multi-axis-no-keyword": {
+      "coordinator": {
+        "required": true,
+        "host_mode": "interactive_main",
+        "acceptable_modes": ["interactive_main"],
+        "worker_calls": ["shuen", "soen", "seiran"],
+        "worker_order": "dependency-driven, not a fixed six-axis sequence",
+        "nested_coordinator_calls": [],
+        "human_checkpoint": "required before any Genen dispatch; the host must wait for the user's provider selection"
+      },
+      "dispatch": [],
+      "disclose_unavailable": []
+    },
+    "kishi-negative-single-axis-inline": {
+      "coordinator": {
+        "required": false,
+        "host_mode": "interactive_main",
+        "nested_coordinator_calls": []
+      },
+      "dispatch": [],
+      "disclose_unavailable": []
+    },
+    "soen-positive-empirical-without-keyword": {
+      "dispatch": ["soen"],
+      "disclose_unavailable": []
+    },
+    "soen-negative-domain-curiosity": {
+      "dispatch": [],
+      "disclose_unavailable": []
+    },
+    "cross-explicit-investigate-test-decide-build": {
+      "coordinator": {
+        "required": true,
+        "acceptable_modes": ["interactive_main", "kishi_agent"],
+        "worker_calls": ["shuen", "soen", "seiran"],
+        "worker_order": "dependency-driven, not a fixed six-axis sequence",
+        "human_checkpoint": "required before any Genen dispatch; the host must wait for the user-selected provider and threshold"
+      },
+      "dispatch": [],
+      "disclose_unavailable": []
+    },
+    "single-axis-without-kishi": {
+      "dispatch": ["seiran"],
+      "disclose_unavailable": []
+    },
+    "unavailable-selected-soen": {
+      "dispatch": [],
+      "disclose_unavailable": ["soen"]
+    },
+    "trivial-no-agent": {
+      "dispatch": [],
+      "disclose_unavailable": []
+    }
+  }
+}
