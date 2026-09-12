@@ -8,8 +8,13 @@ behavior contract, local test battery, and repository CI agree.
 - The Claude and Codex adapters keep separate authority and runtime surfaces.
 - The Codex plugin is self-contained, portable, and implicitly invokable only
   for the positive trigger cases documented in its skill.
-- Queue state, independent two-pass review, convergence ceilings, authority
+- Queue state, tiered independent review, convergence ceilings, authority
   boundaries, and evidence reporting remain explicit and testable.
+- Codex closure review policy is frozen before work: tier 0/1/2 requires
+  0/1/2 reviewers, while legacy manifests without a tier remain on the old
+  dual-review requirement. Explicit policies must match a separately supplied
+  trusted baseline; invalid shapes or mismatches fail closed. High-risk and
+  closure-gate changes remain tier 2.
 - Machine-coupled runtime checks may be skipped in CI, but must pass locally
   before a release or plugin update.
 

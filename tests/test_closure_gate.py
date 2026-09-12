@@ -153,6 +153,11 @@ class ClosureFixture:
         self.write_json(path, self.manifest)
         return path
 
+    def save_review_baseline(self, policy: dict, name: str = "review-baseline.json") -> Path:
+        path = self.root / name
+        self.write_json(path, policy)
+        return path
+
 
 class ClosureGateTests(unittest.TestCase):
     def fixture(self) -> tuple[tempfile.TemporaryDirectory, ClosureFixture]:
@@ -393,6 +398,216 @@ class ClosureGateTests(unittest.TestCase):
                 },
                 result["claims"],
             )
+        finally:
+            temp_dir.cleanup()
+
+    def test_legacy_manifest_without_review_policy_keeps_two_reviewers(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            result = self.run_fixture(fixture)
+            self.assertEqual("CLOSABLE", result["verdict"])
+            self.assertEqual(2, result["review_policy"]["tier"])
+            self.assertEqual(2, result["review_policy"]["count"])
+            self.assertTrue(result["review_policy"]["legacy"])
+        finally:
+            temp_dir.cleanup()
+
+    def test_mechanical_tier_requires_external_baseline_and_zero_reviewers(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            policy = {
+                "tier": 0,
+                "count": 0,
+                "reason": "docs-only mechanical change",
+                "frozen": True,
+            }
+            fixture.manifest["review_policy"] = policy
+            fixture.manifest["reviewers"] = []
+
+            without_baseline = self.run_fixture(fixture)
+            self.assertEqual("BLOCKED", without_baseline["verdict"])
+            self.assertTrue(any(reason["code"] == "review.baseline" for reason in without_baseline["reasons"]))
+
+            manifest = fixture.save_manifest()
+            baseline = fixture.save_review_baseline(policy)
+            result = GATE.run(manifest, review_baseline=baseline)
+            self.assertEqual("CLOSABLE", result["verdict"])
+            self.assertEqual(0, result["review_policy"]["count"])
+        finally:
+            temp_dir.cleanup()
+
+    def test_standard_tier_count_reason_are_bound_to_external_baseline(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            policy = {
+                "tier": 1,
+                "count": 1,
+                "reason": "bounded implementation with one independent review",
+                "frozen": True,
+            }
+            fixture.manifest["review_policy"] = policy
+            fixture.manifest["reviewers"] = fixture.manifest["reviewers"][:1]
+            manifest = fixture.save_manifest()
+
+            baseline = fixture.save_review_baseline(policy)
+            result = GATE.run(manifest, review_baseline=baseline)
+            self.assertEqual("CLOSABLE", result["verdict"])
+            self.assertEqual(1, result["review_policy"]["tier"])
+            self.assertEqual(1, result["review_policy"]["count"])
+
+            fixture.manifest["review_policy"]["tier"] = 0
+            fixture.manifest["review_policy"]["count"] = 0
+            fixture.manifest["reviewers"] = []
+            downgraded = GATE.run(fixture.save_manifest(), review_baseline=baseline)
+            self.assertEqual("BLOCKED", downgraded["verdict"])
+            self.assertTrue(any(reason["code"] == "review.baseline.mismatch" for reason in downgraded["reasons"]))
+        finally:
+            temp_dir.cleanup()
+
+    def test_review_baseline_must_be_path_or_digest_not_manifest_mapping(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            policy = {
+                "tier": 1,
+                "count": 1,
+                "reason": "bounded implementation",
+                "frozen": True,
+            }
+            fixture.manifest["review_policy"] = policy
+            fixture.manifest["reviewers"] = fixture.manifest["reviewers"][:1]
+            result = GATE.run(fixture.save_manifest(), review_baseline=policy)
+            self.assertEqual("BLOCKED", result["verdict"])
+            self.assertTrue(any(reason["code"] == "review.baseline.input" for reason in result["reasons"]))
+        finally:
+            temp_dir.cleanup()
+
+    def test_review_policy_rejects_invalid_tier_count_and_boolean_shapes(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            cases = [
+                ("tier", True, "review.tier"),
+                ("count", False, "review.count"),
+                ("frozen", "yes", "review.frozen"),
+            ]
+            for field, value, code in cases:
+                policy = {
+                    "tier": 1,
+                    "count": 1,
+                    "reason": "bounded change",
+                    "frozen": True,
+                }
+                policy[field] = value
+                fixture.manifest["review_policy"] = policy
+                fixture.manifest["reviewers"] = fixture.manifest["reviewers"][:1]
+                baseline = fixture.save_review_baseline(policy, f"baseline-{field}.json")
+                result = GATE.run(fixture.save_manifest(), review_baseline=baseline)
+                self.assertEqual("BLOCKED", result["verdict"], field)
+                self.assertTrue(any(reason["code"] == code for reason in result["reasons"]), field)
+        finally:
+            temp_dir.cleanup()
+
+    def test_high_risk_policy_cannot_self_downgrade(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            policy = {
+                "tier": 2,
+                "count": 2,
+                "reason": "closure gate change",
+                "frozen": True,
+                "high_risk": True,
+            }
+            fixture.manifest["review_policy"] = policy
+            baseline = fixture.save_review_baseline(policy)
+            result = GATE.run(fixture.save_manifest(), review_baseline=baseline)
+            self.assertEqual("CLOSABLE", result["verdict"])
+
+            downgraded = dict(policy, tier=1, count=1)
+            fixture.manifest["review_policy"] = downgraded
+            fixture.manifest["reviewers"] = fixture.manifest["reviewers"][:1]
+            result = GATE.run(fixture.save_manifest(), review_baseline=baseline)
+            self.assertEqual("BLOCKED", result["verdict"])
+            codes = {reason["code"] for reason in result["reasons"]}
+            self.assertIn("review.high_risk", codes)
+            self.assertIn("review.baseline.mismatch", codes)
+        finally:
+            temp_dir.cleanup()
+
+    def test_review_policy_digest_can_be_supplied_as_separate_trusted_input(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            policy = {
+                "tier": 1,
+                "count": 1,
+                "reason": " one reviewer is sufficient ",
+                "frozen": True,
+            }
+            fixture.manifest["review_policy"] = policy
+            fixture.manifest["reviewers"] = fixture.manifest["reviewers"][:1]
+            digest = GATE.review_policy_digest(policy)
+            result = GATE.run(fixture.save_manifest(), review_baseline_digest=digest)
+            self.assertEqual("CLOSABLE", result["verdict"])
+
+            result = GATE.run(fixture.save_manifest(), review_baseline_digest="0" * 64)
+            self.assertEqual("BLOCKED", result["verdict"])
+            self.assertTrue(any(reason["code"] == "review.baseline.mismatch" for reason in result["reasons"]))
+        finally:
+            temp_dir.cleanup()
+
+    def test_unreadable_baseline_cannot_be_ignored_when_digest_is_also_supplied(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            policy = {
+                "tier": 1,
+                "count": 1,
+                "reason": "bounded change",
+                "frozen": True,
+            }
+            fixture.manifest["review_policy"] = policy
+            fixture.manifest["reviewers"] = fixture.manifest["reviewers"][:1]
+            missing_baseline = fixture.root / "missing-baseline.json"
+            result = GATE.run(
+                fixture.save_manifest(),
+                review_baseline=missing_baseline,
+                review_baseline_digest=GATE.review_policy_digest(policy),
+            )
+            self.assertEqual("BLOCKED", result["verdict"])
+            self.assertTrue(any(reason["code"] == "review.baseline.input" for reason in result["reasons"]))
+        finally:
+            temp_dir.cleanup()
+
+    def test_cli_accepts_external_review_baseline_file(self):
+        temp_dir, fixture = self.fixture()
+        try:
+            policy = {
+                "tier": 0,
+                "count": 0,
+                "reason": "mechanical contract-only change",
+                "frozen": True,
+            }
+            fixture.manifest["review_policy"] = policy
+            fixture.manifest["reviewers"] = []
+            baseline = fixture.root / "review-baseline.json"
+            fixture.write_json(baseline, policy)
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), str(fixture.save_manifest()), "--review-baseline", str(baseline)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(0, completed.returncode)
+            self.assertEqual("CLOSABLE", json.loads(completed.stdout)["verdict"])
+
+            fixture.manifest["review_policy"] = dict(policy, tier=1, count=1)
+            fixture.manifest["reviewers"] = fixture.manifest["reviewers"][:1]
+            fixture.save_manifest()
+            downgraded = subprocess.run(
+                [sys.executable, str(SCRIPT), str(fixture.root / "manifest.json"), "--review-baseline", str(baseline)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(2, downgraded.returncode)
+            self.assertEqual("BLOCKED", json.loads(downgraded.stdout)["verdict"])
         finally:
             temp_dir.cleanup()
 

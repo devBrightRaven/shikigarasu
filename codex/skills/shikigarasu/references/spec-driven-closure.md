@@ -15,6 +15,19 @@ Run the checker from the plugin checkout with one manifest path:
 python -X utf8 codex/skills/shikigarasu/scripts/closure_gate.py path/to/manifest.json
 ```
 
+For a new tiered manifest, also supply the review decision frozen before work
+started.  The baseline can be a JSON file or a digest of the canonical policy:
+
+```text
+python -X utf8 codex/skills/shikigarasu/scripts/closure_gate.py path/to/manifest.json --review-baseline path/to/review-baseline.json
+python -X utf8 codex/skills/shikigarasu/scripts/closure_gate.py path/to/manifest.json --review-baseline-digest <sha256-of-review-policy>
+```
+
+The programmatic equivalent is `run(manifest, review_baseline=<json-path>)` or
+`run(manifest, review_baseline_digest=...)`.  A manifest that has no
+`review_policy` is a legacy v1 manifest and retains the old two-reviewer gate;
+an explicit tiered policy without a separately supplied baseline is `BLOCKED`.
+
 The process prints a JSON result. Exit `0` means `CLOSABLE`; exit `2` means
 `BLOCKED`. Missing files, malformed JSON or fields, non-zero acceptance
 evidence, hash mismatches, or an incomplete review contract fail closed.
@@ -36,6 +49,13 @@ Relative paths resolve from the manifest's directory. The manifest's
         "src/main.py": "<sha256-of-src/main.py>"
       }
     }
+  },
+  "review_policy": {
+    "tier": 2,
+    "count": 2,
+    "reason": "high-risk change with two independent reviews",
+    "frozen": true,
+    "high_risk": true
   },
   "evidence": {
     "requirements": {
@@ -69,11 +89,37 @@ carry requirement IDs, dependencies, producer, and receipt paths. This checker
 does not inspect or mutate that queue; it only confirms that the manifest's
 declared requirement IDs have corresponding evidence.
 
-The placeholders above are the only values that must be computed. A runnable
-fixture can be made with the following short Python setup; run it from the
+`review_policy.tier` is the review decision, not a requirement or test count:
+
+| Tier | Meaning | Required reviewers |
+|---:|---|---:|
+| `0` | mechanical | `0` |
+| `1` | standard | `1` |
+| `2` | high | `2` |
+
+`count` must match the tier exactly, `reason` must be non-empty, and
+`frozen` must be the JSON boolean `true`. The policy is compared with the
+separately supplied baseline before the reviewer list is checked, so editing a
+manifest alone cannot lower its reviewer requirement. `high_risk: true` or
+`gate_change: true` always requires tier `2` and count `2`; changes to this
+closure gate use that old dual-review requirement. The checker can validate a
+declared baseline or digest, but cannot prove who authored it, when it was
+frozen, or that its risk assessment is authentic.
+
+Producer IDs remain distinct from reviewer IDs, and every required reviewer
+still binds evidence to the frozen artifact digest. A reviewer may re-review a
+narrowed change by submitting fresh review evidence bound to the new artifact
+digest; unrelated valid requirement/TDD receipts do not need to be rerun. The
+existing unresolved Critical/Important finding and collective two-fix-round
+ceiling remain in force.
+
+The placeholders above are the only values that must be computed. The following
+runnable fixture exercises the legacy path; run it from the
 plugin checkout (or use an absolute script path), then pass the printed
 manifest path to the command above. It writes only a fresh temporary example
-directory; remove that directory when finished.
+directory; remove that directory when finished. To exercise an explicit
+tiered fixture, add the `review_policy` object shown above and pass a matching
+external baseline.
 
 ```python
 from pathlib import Path
@@ -158,10 +204,20 @@ of `int`.
   exactly, and every declared file must exist with the declared SHA-256. The
   checker hashes only these declared paths; it does not claim full repository
   discovery. The descriptor's own SHA-256 is also checked.
-* `producers` must contain unique non-empty IDs. There must be exactly two reviewer entries. Each evidence object must match
-  its reviewer ID, set `independent` to JSON `true`, use verdict `pass`, and
-  bind `artifact_sha256` to the same frozen artifact digest. Reviewer IDs must
-  be distinct and absent from `producers`.
+* `producers` must contain unique non-empty IDs. Legacy manifests and tier `2`
+  require exactly two reviewer entries; tier `1` requires one and tier `0`
+  requires none. Each required reviewer evidence object must match its reviewer
+  ID, set `independent` to JSON `true`, use verdict `pass`, and bind
+  `artifact_sha256` to the same frozen artifact digest. Reviewer IDs must be
+  distinct and absent from `producers`.
+* For an explicit tiered policy, the caller must provide `review_baseline` or
+  `review_baseline_digest` separately from the manifest. A baseline object must
+  contain the same tier/count/reason/frozen decision (and any high-risk flags);
+  a mapping passed directly as `review_baseline` is invalid. The digest form is
+  the SHA-256 of compact, sorted JSON containing
+  `tier`, `count`, `reason`, `frozen`, `high_risk` (default `false`), and
+  `gate_change` (default `false`). Invalid integer/boolean shapes or any
+  mismatch block closure.
 * `findings` must be a list of objects with severity `Critical`, `Important`,
   `Minor`, or `Info`, and status `open`, `resolved`, or `closed`.
   `Important` and `Critical` findings must be `resolved` or `closed`. The
@@ -170,5 +226,7 @@ of `int`.
 
 The result's claims make the boundary explicit: the gate is read-only,
 `queue_mutated`, `os_enforcement`, `authenticity_verified`, and
-`full_repository_discovery` are all false. A coordinator still needs to inspect
-the raw evidence and apply the independent-review protocol before closing.
+`full_repository_discovery` are all false. A supplied review baseline is an
+explicit trust input, not proof of risk authenticity or chronology. A
+coordinator still needs to inspect the raw evidence and apply the
+independent-review protocol before closing.

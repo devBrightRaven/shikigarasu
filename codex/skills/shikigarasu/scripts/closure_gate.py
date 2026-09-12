@@ -22,6 +22,8 @@ EXIT_BLOCKED = 2
 SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 FINDING_SEVERITIES = {"Critical", "Important", "Minor", "Info"}
 FINDING_STATUSES = {"open", "resolved", "closed"}
+REVIEWER_COUNTS = {0: 0, 1: 1, 2: 2}
+REVIEW_POLICY_FIELDS = ("tier", "count", "reason", "frozen", "high_risk", "gate_change")
 
 
 def sha256(path: Path) -> str | None:
@@ -41,12 +43,36 @@ def valid_digest(value: object) -> bool:
     return isinstance(value, str) and bool(SHA256_RE.fullmatch(value))
 
 
+def review_policy_digest(policy: dict[str, object]) -> str:
+    """Digest the frozen review decision without trusting manifest metadata.
+
+    The digest is deliberately over the decision fields only.  Baseline binding
+    fields are excluded to avoid a circular digest, and unknown metadata cannot
+    change the required reviewer count.
+    """
+
+    reason = policy.get("reason")
+    if isinstance(reason, str):
+        reason = reason.strip()
+    value = {
+        "tier": policy.get("tier"),
+        "count": policy.get("count"),
+        "reason": reason,
+        "frozen": policy.get("frozen"),
+        "high_risk": policy.get("high_risk", False),
+        "gate_change": policy.get("gate_change", False),
+    }
+    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 class Gate:
     def __init__(self, manifest_path: str | Path):
         self.manifest_path = Path(manifest_path).expanduser().resolve()
         self.base = self.manifest_path.parent
         self.checks: list[dict[str, object]] = []
         self.reasons: list[dict[str, str]] = []
+        self.review_policy: dict[str, object] | None = None
 
     def check(self, code: str, passed: bool, detail: str) -> bool:
         passed = bool(passed)
@@ -155,6 +181,7 @@ class Gate:
             "reasons": self.reasons,
             "verdict": "BLOCKED" if self.reasons else "CLOSABLE",
             "exit_code": EXIT_BLOCKED if self.reasons else EXIT_CLOSABLE,
+            "review_policy": self.review_policy,
             "claims": {
                 "read_only": True,
                 "queue_mutated": False,
@@ -173,6 +200,178 @@ def _valid_id_list(gate: Gate, value: object, label: str) -> list[str]:
     valid = len(ids) == len(value) and len(set(ids)) == len(ids)
     gate.check(label, valid, "requirement IDs must be non-empty strings and unique")
     return ids if valid else []
+
+
+def _legacy_review_policy() -> dict[str, object]:
+    return {
+        "tier": 2,
+        "count": 2,
+        "reason": "legacy manifest default: two independent reviewers",
+        "frozen": True,
+        "legacy": True,
+    }
+
+
+def _normalise_review_policy(gate: Gate, value: object, label: str = "review") -> dict[str, object] | None:
+    if not isinstance(value, dict):
+        gate.check(label + ".policy", False, "review policy must be an object")
+        return None
+
+    tier = value.get("tier")
+    valid_tier = isinstance(tier, int) and not isinstance(tier, bool) and tier in REVIEWER_COUNTS
+    gate.check(label + ".tier", valid_tier, "review tier must be integer 0, 1, or 2")
+
+    count = value.get("count")
+    valid_count = isinstance(count, int) and not isinstance(count, bool) and 0 <= count <= 2
+    gate.check(label + ".count", valid_count, "review count must be integer 0, 1, or 2")
+
+    reason = value.get("reason")
+    valid_reason = isinstance(reason, str) and bool(reason.strip())
+    gate.check(label + ".reason", valid_reason, "review reason must be a non-empty string")
+
+    frozen = value.get("frozen")
+    valid_frozen = frozen is True
+    gate.check(label + ".frozen", valid_frozen, "review policy must be frozen before work")
+
+    high_risk = value.get("high_risk", False)
+    valid_high_risk = isinstance(high_risk, bool)
+    gate.check(label + ".high_risk.shape", valid_high_risk, "high_risk must be a JSON boolean")
+
+    gate_change = value.get("gate_change", False)
+    valid_gate_change = isinstance(gate_change, bool)
+    gate.check(label + ".gate_change.shape", valid_gate_change, "gate_change must be a JSON boolean")
+
+    if valid_tier and valid_count:
+        expected_count = REVIEWER_COUNTS[tier]
+        gate.check(
+            label + ".tier_count",
+            count == expected_count,
+            f"tier {tier} requires exactly {expected_count} reviewer(s)",
+        )
+    else:
+        gate.check(label + ".tier_count", False, "tier and count must be valid before their mapping can be checked")
+
+    high_risk_valid = (
+        (not valid_high_risk or not high_risk)
+        and (not valid_gate_change or not gate_change)
+    ) or (valid_tier and valid_count and tier == 2 and count == 2)
+    gate.check(
+        label + ".high_risk",
+        high_risk_valid,
+        "high-risk or gate-change work requires tier 2 and two reviewers",
+    )
+
+    if not (valid_tier and valid_count and valid_reason and valid_frozen and valid_high_risk and valid_gate_change):
+        return None
+    return {
+        "tier": tier,
+        "count": count,
+        "reason": reason.strip(),
+        "frozen": True,
+        "high_risk": high_risk,
+        "gate_change": gate_change,
+    }
+
+
+def _extract_review_policy(gate: Gate, manifest: dict[str, object]) -> tuple[dict[str, object], bool]:
+    if "review_policy" not in manifest:
+        return _legacy_review_policy(), True
+    policy = _normalise_review_policy(gate, manifest["review_policy"])
+    return policy or {}, False
+
+
+def _read_external_baseline(value: object) -> dict[str, object] | None:
+    """Read an externally supplied baseline policy."""
+
+    if not isinstance(value, (str, Path)):
+        return None
+    path = Path(value).expanduser().resolve()
+    try:
+        raw = path.read_bytes()
+        data: object = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+
+    if not isinstance(data, dict):
+        return None
+    return dict(data)
+
+
+def _check_review_policy(
+    gate: Gate,
+    manifest: dict[str, object],
+    *,
+    review_baseline: object = None,
+    review_baseline_digest: object = None,
+) -> tuple[int, bool]:
+    """Validate the frozen review decision and return (required count, legacy)."""
+
+    policy, legacy = _extract_review_policy(gate, manifest)
+    if legacy:
+        gate.review_policy = policy
+        return 2, True
+
+    if review_baseline is not None and not isinstance(review_baseline, (str, Path)):
+        gate.check(
+            "review.baseline.input",
+            False,
+            "review_baseline must be a JSON path; use review_baseline_digest for a digest input",
+        )
+    if review_baseline is not None and review_baseline_digest is not None:
+        gate.check(
+            "review.baseline.input",
+            False,
+            "supply either review_baseline or review_baseline_digest, not both",
+        )
+    baseline = _read_external_baseline(review_baseline)
+    supplied_baseline = baseline is not None or review_baseline_digest is not None
+    gate.check(
+        "review.baseline",
+        bool(policy) and supplied_baseline,
+        "an explicit review policy requires a separately supplied trusted baseline",
+    )
+
+    if baseline is not None:
+        expected = _normalise_review_policy(gate, baseline, "review.baseline")
+        if expected is not None and policy:
+            expected_comparison = {
+                field: expected.get(field, False)
+                for field in REVIEW_POLICY_FIELDS
+            }
+            actual_comparison = {
+                field: policy.get(field, False)
+                for field in REVIEW_POLICY_FIELDS
+            }
+            gate.check(
+                "review.baseline.mismatch",
+                actual_comparison == expected_comparison,
+                "manifest review policy matches the separately supplied baseline",
+            )
+
+    if review_baseline_digest is not None:
+        valid_baseline_digest = valid_digest(review_baseline_digest)
+        gate.check(
+            "review.baseline.digest",
+            valid_baseline_digest,
+            "review baseline digest must be 64 hexadecimal characters",
+        )
+        if valid_baseline_digest and policy:
+            digest_matches = review_policy_digest(policy) == str(review_baseline_digest).lower()
+            if baseline is not None:
+                expected = _normalise_review_policy(gate, baseline, "review.baseline.digest")
+                if expected is not None:
+                    digest_matches = review_policy_digest(expected) == str(review_baseline_digest).lower()
+            gate.check(
+                "review.baseline.mismatch",
+                digest_matches,
+                "review policy matches the separately supplied baseline digest",
+            )
+
+    if policy:
+        policy = dict(policy)
+        policy["legacy"] = False
+        gate.review_policy = policy
+    return int(policy.get("count", 0)) if isinstance(policy.get("count"), int) and not isinstance(policy.get("count"), bool) else 0, False
 
 
 def _check_frozen_contract(gate: Gate, manifest: dict[str, object]) -> tuple[list[str], Path | None, str | None, dict[str, str]]:
@@ -352,10 +551,18 @@ def _check_reviewers(
     manifest: dict[str, object],
     producers: list[str],
     artifact_digest: str | None,
+    required_count: int = 2,
 ) -> None:
     reviewers = manifest.get("reviewers")
-    if not isinstance(reviewers, list) or len(reviewers) != 2:
-        gate.check("reviewers.count", False, "exactly two reviewers are required")
+    if not isinstance(reviewers, list) or len(reviewers) != required_count:
+        gate.check(
+            "reviewers.count",
+            False,
+            f"exactly {required_count} reviewer(s) are required by the frozen review tier",
+        )
+        return
+    gate.check("reviewers.count", True, f"exactly {required_count} reviewer(s) are present")
+    if required_count == 0:
         return
     reviewer_ids: list[str] = []
     for number, entry in enumerate(reviewers, 1):
@@ -378,12 +585,12 @@ def _check_reviewers(
         gate.check(label + ".artifact", same_artifact, "reviewer evidence binds to the frozen artifact")
     gate.check(
         "reviewers.distinct",
-        len(reviewer_ids) == 2 and len(set(reviewer_ids)) == 2,
+        len(reviewer_ids) == required_count and len(set(reviewer_ids)) == required_count,
         "reviewer IDs must be distinct",
     )
     gate.check(
         "reviewers.nonproducer",
-        len(reviewer_ids) == 2 and all(reviewer_id not in producers for reviewer_id in reviewer_ids),
+        len(reviewer_ids) == required_count and all(reviewer_id not in producers for reviewer_id in reviewer_ids),
         "neither reviewer may be a producer",
     )
 
@@ -412,7 +619,13 @@ def _check_findings_and_rounds(gate: Gate, manifest: dict[str, object]) -> None:
     gate.check("fix_rounds", valid_rounds, "collective fix rounds must be an integer from 0 through 2")
 
 
-def run(manifest_path: str | Path) -> dict[str, object]:
+def run(
+    manifest_path: str | Path,
+    review_baseline: object = None,
+    review_baseline_digest: object = None,
+) -> dict[str, object]:
+    """Evaluate a manifest against one independently supplied review baseline."""
+
     gate = Gate(manifest_path)
     try:
         manifest = gate.read_json(gate.manifest_path, "manifest")
@@ -421,6 +634,12 @@ def run(manifest_path: str | Path) -> dict[str, object]:
             return gate.finish()
         gate.check("schema_version", manifest.get("schema_version") == SCHEMA_VERSION, f"schema_version must be {SCHEMA_VERSION}")
 
+        required_reviewers, _ = _check_review_policy(
+            gate,
+            manifest,
+            review_baseline=review_baseline,
+            review_baseline_digest=review_baseline_digest,
+        )
         requirement_ids, artifact_path, artifact_digest, inventory = _check_frozen_contract(gate, manifest)
         _check_artifact(gate, artifact_path, inventory)
         _check_requirements(gate, manifest, requirement_ids)
@@ -437,7 +656,13 @@ def run(manifest_path: str | Path) -> dict[str, object]:
             and len(set(producers)) == len(producers)
         )
         gate.check("producers", valid_producers, "producers must be a list of non-empty IDs")
-        _check_reviewers(gate, manifest, producers if valid_producers else [], artifact_digest)
+        _check_reviewers(
+            gate,
+            manifest,
+            producers if valid_producers else [],
+            artifact_digest,
+            required_reviewers,
+        )
         _check_findings_and_rounds(gate, manifest)
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         gate.check("gate.input", False, f"malformed or unreadable closure input: {exc}")
@@ -449,8 +674,21 @@ def run(manifest_path: str | Path) -> dict[str, object]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate declared SDD closure evidence without mutating a queue.")
     parser.add_argument("manifest", type=Path, help="frozen closure manifest JSON")
+    parser.add_argument(
+        "--review-baseline",
+        type=Path,
+        help="trusted review-policy baseline JSON (required for explicit tiered policies)",
+    )
+    parser.add_argument(
+        "--review-baseline-digest",
+        help="trusted SHA-256 of the canonical review-policy baseline",
+    )
     args = parser.parse_args(argv)
-    result = run(args.manifest)
+    result = run(
+        args.manifest,
+        review_baseline=args.review_baseline,
+        review_baseline_digest=args.review_baseline_digest,
+    )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return int(result["exit_code"])
 
