@@ -12,6 +12,8 @@ If $ARGUMENTS is empty, ask: "審哪個 artifact？給我檔案路徑、PR 連�
 
 ## Operating mode · Hakusō forced
 
+Independent review needs a fresh transcript. Invoked in the main session, review only an artifact another agent produced and whose work order this session did not write; a pass on this session's own work is a self-check and does not count as an independent review pass.
+
 Three mandatory sections:
 
 1. **Verdict** — PASS / BLOCK / CONDITIONAL PASS（一個明確 verdict）

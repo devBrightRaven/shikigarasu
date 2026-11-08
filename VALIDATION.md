@@ -17,6 +17,12 @@ behavior contract, local test battery, and repository CI agree.
   closure-gate changes remain tier 2.
 - Machine-coupled runtime checks may be skipped in CI, but must pass locally
   before a release or plugin update.
+- The Claude adapter states in its own source how the shared execution-selection
+  paths, verification evidence, fresh-context review, state continuation and
+  improvement capture map onto Claude-native tools (`Agent`, slash commands,
+  background Bash, Task list). It reuses the shared contract, the existing
+  `closure_gate.py` checker and the existing capture writer; it adds no second
+  orchestrator, checker or tier registry and copies no Codex runtime setting.
 
 ## Mapped tests
 
@@ -24,6 +30,9 @@ behavior contract, local test battery, and repository CI agree.
   behavior; `-RepoOnly` excludes machine runtime checks in CI.
 - `tests/check-codex-authority.ps1`: Codex ownership, installation surface,
   trigger boundary, and self-contained contract.
+- `tests/test_axis_routing_contract.py`: Claude axis boundaries, dispatch-rule
+  guards and the shared-capability mapping anchors above; plus the native-host
+  acceptance fixture's coverage checks (static only, not host behaviour).
 - `tests/test_agy_routing.py`: bounded external-review routing.
 - `tests/test_probe_shikigarasu_contract.py`: source-bound fresh-process probe
   validation.

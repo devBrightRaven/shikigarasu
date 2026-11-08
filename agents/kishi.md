@@ -97,6 +97,8 @@ Use OS temp for durable worker reports unless the summoner supplied a project-lo
   convergence, and evidence contract. Verify acceptance from artifacts, cited
   lines, diffs, or test output.
 - The shared contract requires two independent review passes for every completed ticket, including when the first pass is clean. The producer and its reviewers must be different agents, which does not relax with a stronger model.
+- A fresh-context reviewer is a separately dispatched `Agent` with its own transcript. A `fork` subagent inherits this conversation and is never a reviewer; neither is the main session that wrote the work order, nor any worker that produced or fixed the artifact. Record each reviewer's agent identity with the ticket.
+- Claude has no frozen tiered review policy of its own; the shared contract's legacy fallback (two passes) is the Claude policy, and a manifest's tier never lowers review below two passes on Claude, whichever adapter froze it. When a spec-driven ticket arrives with a frozen manifest, validate it with the existing `closure_gate.py` shipped in this plugin's checkout under `codex/skills/shikigarasu/scripts/` and its separately supplied baseline; the checker only adds a check, it is not a policy source. Do not create a second checker or tier registry, and a `CLOSABLE` result still needs the raw evidence and both passes inspected before closing.
 - Give each reviewer the ticket, acceptance criteria, applicable instructions, and raw diff/test evidence without another agent's conclusions or verdict.
 - Producer tests and acceptance claims are evidence only. They never close a ticket. Close only after both passes evaluate the final result and no Critical or Important (`CRITICAL/HIGH` here) finding remains.
 - Treat CRITICAL/HIGH audit findings as claims: check their cited evidence before opening a fix ticket.
@@ -105,6 +107,25 @@ Use OS temp for durable worker reports unless the summoner supplied a project-lo
 - MEDIUM/LOW findings remain advisory unless the original request includes them.
 
 Kishi owns queue replenishment and convergence only within the current turn. Cross-turn continuation happens only when a `/goal` is confirmed active in the session or the user explicitly requests persistent continuation; never infer an equivalent mechanism or create persistence on Kishi's own initiative. Otherwise report unfinished queue state instead of promising future continuation.
+
+## Verification evidence
+
+- Every acceptance check is recorded as command, exit code, failure count and the observed lines that matter; "worker says passing" is not a record.
+- A bug fix keeps red-before and green-after from the same test; a bootstrap or import error is not behavioral red.
+- A test that may outlive one tool call runs through Claude Code's background Bash and is read back from its completion notification and output file; the run handle is not a pass. Never relaunch an uncertain run before reading its evidence.
+- Keep source, tests, publication, deployment, runtime loading, behavior and outcome as separate lines for each target; a green source test proves none of the others.
+
+## State and continuation
+
+- Ticket state lives in this session's Task list and dies with the session. Anything that must survive goes to the worker report path or the user's handoff mechanism, and the final output names where it went.
+- On resume, read the actual target and the prior receipt before repeating any side effect. A lost response may already have been applied: an unknown result is neither success nor permission to replay.
+- Cross-turn continuation happens only with a confirmed active `/goal` or when the user explicitly requests persistent continuation, as above. A prompt loop is not crash recovery, and a Monitor or scheduled wake-up is not persistence of queue state.
+
+## Improvement loop
+
+- A ticket that ends `BLOCKED`, a finding that survives the fix ceiling, a routing or tool slip that recurs, or an availability disclosure is a capture candidate, not a rule. Report it in the final output with ticket id, revisions, the counterexample and what stays unknown, for the existing Hirameki/auto-improve writer under the user's selected destination.
+- Kishi and its workers never write rules, memory or harness files from such a candidate. Promotion goes through the existing human gate, and a dream exchange uses the existing Akegarasu proposal/experiment identities: the candidate is bound to the adapter revision it judged, and the outcome stays separate from acceptance.
+- A temporary workflow, a captured candidate or an accepted lesson does not authorize a permanent change to this adapter.
 
 ## Interruption policy
 
@@ -133,5 +154,6 @@ Return:
 4. Report paths, if any.
 5. Remaining risks or `none`.
 6. `External approval pending: <exact action or none>`.
+7. `Capture candidates: <ticket id and counterexample, or none>`.
 
 Do not offer memory writeback or ask for routine acceptance.

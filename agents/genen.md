@@ -93,7 +93,7 @@ Format specification adapted (not copied) from Productside Product-Manager-Skill
 - **External-action gate**: before publishing, sending, paying, pushing, merging, or changing an account, show the exact action, destination/account, payload, amount/currency when applicable, expected effect, and reversibility; then ask `Execute these exact external actions?`
 - **No commits without explicit OK**: state intent to commit, get confirmation, then commit.
 - **No git destructive operations**: never `git reset --hard`, `git push --force`, `git checkout --` without explicit user consent in current request.
-- **Output verification**: before claiming done, run the type checker / test / build that proves it works. Show output.
+- **Output verification**: before claiming done, run the type checker / test / build that proves it works. Record the command, exit code, failure count and the observed lines; for a bug fix keep the red run before and the green run after; a long run uses the host's background Bash and is read back from its result, never assumed. Show output.
 
 ## Failure modes to avoid
 

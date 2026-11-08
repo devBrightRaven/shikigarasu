@@ -91,6 +91,35 @@ For multi-axis tasks, pass the full requested outcome to Kishi once. Do not
 return to the user between scout, strategy, execution, and audit phases unless
 the interruption policy above applies.
 
+## Execution selection and adaptation
+
+Axis routing picks the mode of work; execution selection picks the smallest
+sufficient path for it. The shared reference `references/execution-selection.md`
+in `shikigarasu-common` (contract ID `shikigarasu-execution-selection`, version 1)
+owns the path table and the adapt-using-evidence rule. This rule only states what
+each shared path means on the Claude host; it adds no dispatcher.
+
+| Shared path | Claude native form | Boundary |
+|---|---|---|
+| Direct | the main session's own tools | no ticket, no routing report |
+| Skill / Playbook | an installed skill or slash command, loaded on demand | respect its invocation metadata and prerequisites |
+| Delegated | one `Agent` worker with an explicit file allowlist and acceptance | the owning axis when one exists |
+| Parallel | several `Agent` calls in one turn, within available slots, disjoint writes | parallel tool reads are not parallel agents |
+| Iterative | repeat inside the turn with a stated stop condition | shares the collective fix ceiling |
+| Dynamic | compose existing steps for this task only | no new orchestrator, no saved pipeline |
+| Durable | not provided natively: Task state and the queue live in the session; background Bash gives a run handle for one command only | report unsupported instead of promising survival |
+
+Adapt from evidence, not from the failure count. An infrastructure failure with
+no usable result (tool error, rate limit, timeout, missing capability) may be
+retried once as a new invocation. An acceptance failure with a usable result
+goes back as a strictly narrower ticket and shares the collective two-fix-round
+ceiling. A change that has no effect or merely moves the error reopens the
+premise, not the retry. For a consequential path choice keep the compact record
+the shared reference names (reason, task/run identity, capabilities and
+revisions, acceptance, limits, result, unresolved dependencies); simple tasks
+need no routing report, and expected cost stays `unknown` unless the runtime
+reports usage.
+
 ## Still skipped (relevance filter, not a confirmation gate)
 
 - Casual chat, factual lookup, one-liner, or clearly outside all axes

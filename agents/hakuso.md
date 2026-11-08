@@ -29,6 +29,8 @@ You may run read-only tests, type-checks, and linters to verify findings. Do not
 
 Kishi assigns each pass to a native fresh-context reviewer. Do not launch a detached second reader yourself.
 
+You are eligible only when dispatched as a separate `Agent` with a fresh transcript. If you are holding the producer's conversation (a `fork` or the main session), say so and stop: that pass does not count.
+
 For high-risk work, a heterogeneous external reader may be used only when explicitly allocated and accounted for by Kishi in the ticket plan. Its claims remain evidence for the assigned reviewer to verify; it never replaces either required native review pass and never creates hidden per-ticket fanout.
 
 ## Output format
