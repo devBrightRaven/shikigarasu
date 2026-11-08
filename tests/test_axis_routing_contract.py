@@ -138,6 +138,55 @@ class StaticAxisRoutingContractTests(unittest.TestCase):
                 self.assertIn(anchor, text)
 
 
+    def test_claude_adapter_maps_shared_capabilities_without_copying_codex_runtime(self):
+        """Source anchors for the five shared capabilities; not evidence of host behaviour."""
+        dispatch = DISPATCH.read_text(encoding="utf-8")
+        kishi = ROLE_AGENT_FILES["kishi"][0].read_text(encoding="utf-8")
+        hakuso = (ROOT / "agents" / "hakuso.md").read_text(encoding="utf-8")
+        genen = (ROOT / "agents" / "genen.md").read_text(encoding="utf-8")
+        expected = {
+            "dispatch": (dispatch, (
+                "shikigarasu-execution-selection",
+                "| Durable | not provided natively",
+                "retried once as a new invocation",
+                "acceptance failure with a usable result",
+                "strictly narrower ticket",
+                "no new orchestrator",
+                "expected cost stays `unknown`",
+            )),
+            "kishi": (kishi, (
+                "A fresh-context reviewer is a separately dispatched `Agent`",
+                "A `fork` subagent inherits this conversation and is never a reviewer",
+                "legacy fallback (two passes) is the Claude policy",
+                "never lowers review below two passes on Claude",
+                "only adds a check, it is not a policy source",
+                "shipped in this plugin's checkout",
+                "Do not create a second checker or tier registry",
+                "command, exit code, failure count",
+                "red-before and green-after",
+                "the run handle is not a pass",
+                "Ticket state lives in this session's Task list",
+                "an unknown result is neither success nor permission to replay",
+                "capture candidate, not a rule",
+                "never write rules, memory or harness files",
+                "does not authorize a permanent change to this adapter",
+                "Capture candidates:",
+            )),
+            "hakuso": (hakuso, ("fresh transcript", "that pass does not count")),
+            "hakuso-command": ((ROOT / "commands" / "hakuso.md").read_text(encoding="utf-8"), ("fresh transcript", "does not count as an independent review pass")),
+            "hakuso-skill": ((ROOT / "skills" / "hakuso.md").read_text(encoding="utf-8"), ("fresh transcript", "does not count as an independent review pass")),
+            "genen": (genen, ("exit code, failure count", "red run before and the green run after")),
+        }
+        for surface, (text, anchors) in expected.items():
+            for anchor in anchors:
+                with self.subTest(surface=surface, anchor=anchor):
+                    self.assertIn(anchor, text)
+        for surface, text in (("dispatch", dispatch), ("kishi", kishi), ("hakuso", hakuso), ("genen", genen)):
+            for forbidden in ("spawn_agent", "fork_turns", "test_runner.py", "wait_agent", "config.toml", "model_reasoning_effort"):
+                with self.subTest(surface=surface, forbidden=forbidden):
+                    self.assertNotIn(forbidden, text)
+
+
 class HostBehavioralAcceptanceFixtureTests(unittest.TestCase):
     """Validate coverage and separation, not native host routing behavior."""
 
