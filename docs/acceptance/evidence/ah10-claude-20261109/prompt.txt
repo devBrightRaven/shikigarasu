@@ -1,0 +1,12 @@
+請依這次共用workflow契約，唯讀判斷合成任務應如何執行與驗證。
+
+任務：synthetic two independent source checks followed by one integration decision。
+權限：read supplied artifacts; native delegation only if authorized and actually available。
+限制：唯讀的 source／plan 判斷；不得 import、執行或測試 Python，不得升級模型、呼叫外部 API 或寫入任何檔案；不得派出子代理做委派；最多 6 次讀取／工具動作、3 分鐘內完成。
+
+提供的檔案（全部在目前工作目錄，只讀這些）：
+- 共用 workflow 契約：contract/SKILL.md、contract/references/execution-selection.md
+- Claude native adapter（以 source 提供，不是 installed 探索）：native-claude/shikigarasu-dispatch.md、native-claude/agents/*.md、native-claude/skills/*.md
+- 合成任務材料：common/alpha.py、common/beta.py、common/integration.txt
+
+最後請回報：你選擇的執行路徑與理由；對這個整合的判斷與你建議的驗證方式；實際讀了哪些檔案、用了幾次工具；有沒有派出子代理（數量）；副作用；你能確認的模型／effort 與無法確認的部分；其他限制。
