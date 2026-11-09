@@ -46,24 +46,7 @@
   "duration_ms": 28291,
   "duration_api_ms": 27589,
   "permission_denials": [],
-  "modelUsage": {
-   "claude-sonnet-5-5": {
-    "inputTokens": 6,
-    "outputTokens": 2607,
-    "cacheReadInputTokens": 56101,
-    "cacheCreationInputTokens": 38680,
-    "webSearchRequests": 0,
-    "costUSD": 0.1864121,
-    "contextWindow": 1000000,
-    "maxOutputTokens": 128000,
-    "thinkingTokens": 571,
-    "cacheCreationEphemeral5mInputTokens": 0,
-    "cacheCreationEphemeral1hInputTokens": 38680,
-    "canonicalModel": "claude-sonnet-5-5",
-    "provider": "firstParty",
-    "costBasis": "list"
-   }
-  },
-  "total_cost_usd": 0.1864121
- }
+  "model": "claude-sonnet-5-5"
+ },
+ "redacted": "usage and cost fields removed from the public copy (issue #2); result.model is the key of the removed modelUsage object, not a field of the raw result event"
 }

@@ -15,23 +15,18 @@ result, does not claim installed or fresh discovery, and does not claim effect.
 | Shared contract | dotcodex `def9fc66b201326424e529365bc6ca63dee1b558` `agent-skills/shikigarasu-common/` | `SKILL.md` `8681fae2…`, `references/execution-selection.md` `3246650b…` |
 | Claude native adapter | this repo `e31c4dd463bfda3959c6f62002b53ba754c65f21`: `rules/common/shikigarasu-dispatch.md`, `agents/*.md`, `skills/*.md` | dispatch rule `eceb85c6…`; all 11 files in `inputs.sha256` |
 
-Installed state on this machine, read-only: plugin cache `shikigarasu 0.3.1`
-(`gitCommitSha e31c4dd`) is byte-identical to the e31c4dd source for all 25 non-test,
-non-codex files. The installed shared skill at `~/.agents/skills/shikigarasu-common/`
-has the same `SKILL.md` digest but a different `execution-selection.md`
-(`e2a96235…` vs the fixture's `3246650b…`); the trial used the fixture-pinned def9fc66
-source copy, not the installed file. Installed parity is reported, not exercised.
+The trial used the fixture-pinned source copies above, not any installed copy. Installed
+state was not exercised, and the trial machine's installed inventory is not part of this
+public record.
 
 ## Method
 
 - Runtime: Claude Code CLI 2.1.319, `claude -p`, cwd = an isolated staging directory
   holding only the three input folders (`common/`, `contract/`, `native-claude/`).
 - Minimum context: `--setting-sources project` with no CLAUDE.md, hooks or plugins in
-  that directory. The init event lists only built-in agents (`claude`, `Explore`,
-  `general-purpose`, `Plan`, `statusline-setup`), 4 built-in `cc-plugin-*` plugins,
-  19 built-in skills and built-in slash commands; no Shikigarasu plugin agent, no
-  user rules. Ten account-level claude.ai MCP servers were attached (8 `pending`,
-  2 `needs-auth`); no MCP tool appeared in the tool list or was used.
+  that directory. The init event showed no Shikigarasu plugin agent and no user
+  rules, and no MCP tool appeared in the tool list or was used. The rest of that
+  session's runtime inventory is kept private.
 - Model/effort requested: `--model sonnet --effort low`.
 - Tools: `--allowedTools Read,Glob,Grep,Agent`; `--disallowedTools Write,Edit,Bash,
   NotebookEdit,WebFetch,WebSearch,Skill,TodoWrite`; `--max-turns 10`; wall-clock
@@ -42,8 +37,8 @@ source copy, not the installed file. Installed parity is reported, not exercised
   worker if justified; no child delegation" into a flat "do not dispatch child
   agents". The zero-children result is therefore partly prompt-induced, not only
   the subject's own routing choice.
-- CLI flags, the 200 s timeout and the plugin-cache parity check are operator
-  declarations; the stream-json does not record them.
+- CLI flags and the 200 s timeout are operator declarations; the stream-json does
+  not record them.
 - Prompt (`evidence/ah10-claude-20261109/prompt.txt`, SHA-256 `d6d9a917…`): the fixture
   prompt verbatim, then `given.task`, `given.authority` and the `limits` in Chinese,
   the read set, and a request to report path, judgement, files read, tool count,
@@ -55,12 +50,12 @@ source copy, not the installed file. Installed parity is reported, not exercised
 | evidence_required | Value |
 |---|---|
 | actual_tools_loaded | Loaded (init event, 19): Task, CronCreate, CronDelete, CronList, DesignSync, EnterWorktree, ExitWorktree, Glob, Grep, ListAgents, PushNotification, Read, RemoteTrigger, ReportFindings, ScheduleWakeup, SendMessage, TaskStop, ToolSearch, Workflow. The delegation tool in this runtime is named `Task`; `Agent` is not in the list and whether `--allowedTools Agent` maps onto `Task` was not verified. Called (5): Read `contract/SKILL.md`; Read `contract/references/execution-selection.md`; Grep `.*` over `native-claude/` (96 KB, truncated by the runtime); Grep `.*` over `common/`; Read `native-claude/shikigarasu-dispatch.md`. Log: `evidence/ah10-claude-20261109/tool-log.json` |
-| confirmable_model_effort | Model `claude-sonnet-5-5` confirmed twice by the runtime (init event, `modelUsage`). Effort: requested `low`; not echoed by the runtime, unconfirmed |
+| confirmable_model_effort | Model `claude-sonnet-5-5` confirmed twice by the runtime (init event and result event). Effort: requested `low`; not echoed by the runtime, unconfirmed |
 | workflow_chosen | Direct, inline; no queue, no Kishi/genen/hakuso; no independent review claimed |
 | subagent_count | 0. `Task` was loaded and unused: the session transcript has no `Agent`/`Task` tool_use, zero sidechain entries, `subagent_stats.spawned = 0` |
-| test_result | PASS, limited (see verdict). 6 turns, 28.3 s wall, 27.6 s API; output 2607 tokens, cache read 56 101, cache write 38 680; list-basis cost 0.186 USD on subscription; `permission_denials: []`; one `rate_limit_event` with status `allowed` (five-hour window 15 %) |
+| test_result | PASS, limited (see verdict). 6 turns, 28.3 s wall, 27.6 s API; `permission_denials: []`. Token usage, cost and rate-limit state are kept private |
 | side_effects | Staging file set and all 16 SHA-256 digests unchanged before/after. The runtime created its own session transcript and a tool-results spill file for the 96 KB grep; the subject wrote nothing. Other locations not exhaustively checked |
-| evidence_location | `docs/acceptance/evidence/ah10-claude-20261109/` (prompt, result, tool log, input digests). Raw stream-json (SHA-256 `e0c817ad…`, 185 KB) kept machine-local outside the repo |
+| evidence_location | `docs/acceptance/evidence/ah10-claude-20261109/` (prompt, result, tool log, input digests). Raw stream-json (SHA-256 `e0c817ad…`, 185 KB) kept machine-local outside the repo, together with the unredacted first version of this file and of the tool log |
 
 ## Subject result (`evidence/ah10-claude-20261109/result.md`)
 
@@ -92,3 +87,11 @@ Retained deviations and gaps:
   side's PASS substitutes for the other, and full runtime interoperability remains open.
 
 No merge, release, deployment, hook, schedule or private-store change was made.
+
+## Revision note (2026-11-09)
+
+After the consumer-side review on issue #2, per-machine installed inventory, the
+session's account-level runtime inventory and usage figures were removed from this file
+and from `tool-log.json`. Inputs, prompt, the five tool actions, the subject result, the
+verdict and every limit are unchanged. Commits up to `5ce3481` still contain the removed
+text; history was not rewritten.
