@@ -41,6 +41,69 @@ def wait_for_terminal(handle: Path, timeout: float = 8.0) -> dict:
 
 
 class DurableTestRunnerTests(unittest.TestCase):
+    def test_terminal_result_is_published_after_final_metadata(self):
+        for status, exit_status, timed_out in (
+            ("passed", 0, False),
+            ("failed", 7, False),
+            ("timed_out", -9, True),
+            ("failed", None, False),
+        ):
+            with self.subTest(status=status, exit_status=exit_status), tempfile.TemporaryDirectory() as temp_dir:
+                run_dir = Path(temp_dir)
+                metadata = RUNNER._metadata_for_start(run_dir, child_code("pass"), run_dir, 3)
+                metadata.update(status="running", pid=None, pid_identity=None,
+                                supervisor_pid=123, supervisor_identity="fixture-supervisor")
+                RUNNER._atomic_write_json(run_dir / RUNNER.METADATA_FILE, metadata)
+                write_json = RUNNER._atomic_write_json
+                observed = []
+
+                def observe_publication(path, payload):
+                    write_json(path, payload)
+                    if path.name == RUNNER.RESULT_FILE:
+                        persisted = json.loads((run_dir / RUNNER.METADATA_FILE).read_text())
+                        for key in ("status", "terminal", "success", "ended_at", "exit_status"):
+                            self.assertEqual(payload[key], persisted[key], key)
+                        observed.append(RUNNER.status_run(run_dir))
+
+                with mock.patch.object(RUNNER, "_atomic_write_json", side_effect=observe_publication):
+                    RUNNER._write_terminal_result(
+                        run_dir, metadata, status=status, exit_status=exit_status,
+                        started_at="2026-01-01T00:00:00Z", ended_at="2026-01-01T00:00:01Z",
+                        pid=None, pid_identity=None, supervisor_pid=123,
+                        supervisor_identity="fixture-supervisor", timed_out=timed_out,
+                        error="launch failed" if exit_status is None else None,
+                    )
+                self.assertEqual(1, len(observed))
+                self.assertEqual(status, observed[0]["status"])
+                self.assertEqual(exit_status, observed[0]["exit_status"])
+
+    def test_interrupted_terminal_publication_cannot_report_success(self):
+        for failed_file in (RUNNER.METADATA_FILE, RUNNER.RESULT_FILE):
+            with self.subTest(failed_file=failed_file), tempfile.TemporaryDirectory() as temp_dir:
+                run_dir = Path(temp_dir)
+                metadata = RUNNER._metadata_for_start(run_dir, child_code("pass"), run_dir, 3)
+                RUNNER._atomic_write_json(run_dir / RUNNER.METADATA_FILE, metadata)
+                write_json = RUNNER._atomic_write_json
+
+                def interrupt_publication(path, payload):
+                    if path.name == failed_file:
+                        raise OSError("interrupted publication")
+                    write_json(path, payload)
+
+                with mock.patch.object(RUNNER, "_atomic_write_json", side_effect=interrupt_publication):
+                    with self.assertRaisesRegex(OSError, "interrupted publication"):
+                        RUNNER._write_terminal_result(
+                            run_dir, metadata, status="passed", exit_status=0,
+                            started_at="2026-01-01T00:00:00Z", ended_at="2026-01-01T00:00:01Z",
+                            pid=None, pid_identity=None, supervisor_pid=123,
+                            supervisor_identity="fixture-supervisor", timed_out=False,
+                        )
+                self.assertFalse((run_dir / RUNNER.RESULT_FILE).exists())
+                with mock.patch.object(RUNNER, "_supervisor_state", return_value="dead"):
+                    result = RUNNER.status_run(run_dir)
+                self.assertEqual("uncertain", result["status"])
+                self.assertIsNone(result["success"])
+
     def test_success_captures_stdout_and_persists_terminal_result(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

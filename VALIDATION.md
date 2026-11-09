@@ -43,7 +43,7 @@ behavior contract, local test battery, and repository CI agree.
 ## Gates
 
 - `tests/test_closure_gate.py`: reusable spec, behavioral TDD, artifact and independent-review closure checks; negative evidence must block without mutating a queue.
-- `tests/test_test_runner.py`: durable test launch/status, output capture, failures, timeout and run-directory collision handling. A run handle is not success; inspect its terminal result.
+- `tests/test_test_runner.py`: durable test launch/status, output capture, failures, timeout and run-directory collision handling. Terminal results are published after final lifecycle metadata; metadata alone is not completion. A run handle is not success; inspect its terminal result.
 - Spec-driven integration must map the approved requirements to tickets and raw evidence. The checker cannot establish receipt authenticity, actual model identity, crash recovery, or OS containment.
 
 - Local: `npm test -- --run` must pass before commit. The extra `--run` is

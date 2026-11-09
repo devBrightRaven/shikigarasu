@@ -486,8 +486,6 @@ def _write_terminal_result(
     }
     if error:
         result["error"] = error
-    _atomic_write_json(_paths(run_dir)["result"], result)
-
     final_metadata = dict(metadata)
     final_metadata.update(
         {
@@ -508,6 +506,8 @@ def _write_terminal_result(
     if error:
         final_metadata["error"] = error
     _atomic_write_json(_paths(run_dir)["metadata"], final_metadata)
+    # Publish the terminal marker only after its lifecycle metadata is durable.
+    _atomic_write_json(_paths(run_dir)["result"], result)
 
 
 def _supervise(run_dir: Path) -> int:
