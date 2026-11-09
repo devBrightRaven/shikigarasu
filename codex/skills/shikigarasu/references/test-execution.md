@@ -73,8 +73,11 @@ Each run directory contains:
 - `stdout.txt` and `stderr.txt`: captured direct-child output;
 - `result.json`: the atomic terminal result.
 
-All JSON publication uses a temporary file followed by `os.replace`. A PID is
-never used alone: status compares the persisted process-generation token to a
+All JSON publication uses a temporary file followed by `os.replace`. Final
+lifecycle metadata is written before
+`result.json` is published. Metadata alone cannot establish completion; if
+publication is interrupted before the result, status remains non-success.
+A PID is never used alone: status compares the persisted process-generation token to a
 fresh token (`/proc/<pid>/stat` on Linux or process creation time on Windows).
 If that comparison cannot be made, status is `uncertain`.
 
